@@ -25,7 +25,6 @@ export async function createProjectAction(input: {
   try {
     const project = await createProject({
       ...input,
-      currentUserId: "user-admin",
     });
 
     return { ok: true, projectId: project.id };
@@ -52,7 +51,6 @@ export async function updateProjectAction(
   try {
     const project = await updateProject(projectId, {
       ...input,
-      currentUserId: "user-admin",
     });
 
     return { ok: true, projectId: project.id };

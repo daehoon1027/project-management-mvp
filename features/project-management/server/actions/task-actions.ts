@@ -18,7 +18,7 @@ export async function createTaskAction(projectId: string, input: TaskInput): Pro
   }
 
   try {
-    const task = await createTask(projectId, input, "user-admin");
+    const task = await createTask(projectId, input);
     return { ok: true, taskId: task.id };
   } catch (error) {
     return {
@@ -34,7 +34,7 @@ export async function updateTaskAction(taskId: string, input: TaskPatch): Promis
   }
 
   try {
-    const task = await updateTask(taskId, input, "user-admin");
+    const task = await updateTask(taskId, input);
     return { ok: true, taskId: task.id };
   } catch (error) {
     return {
@@ -66,7 +66,7 @@ export async function addCommentAction(taskId: string, body: string): Promise<Ta
   }
 
   try {
-    await addComment(taskId, body, "user-admin");
+    await addComment(taskId, body, "");
     return { ok: true, taskId };
   } catch (error) {
     return {
