@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { cleanupTaskDependencies, createCommentRecord } from "@/server/repositories/project-management-cleanup.repository";
 import { createTaskRecord, deleteTasksByIds, listTasks, updateTaskRecord } from "@/server/repositories/task.repository";
+import { resolveActorUserId } from "@/server/repositories/user.repository";
 import { validateTaskTitle } from "@/features/project-management/server/validators/task.validator";
 import type { TaskInput, TaskPatch, TaskStatus } from "@/types";
 
@@ -34,6 +35,7 @@ function getDescendantTaskIds(
 export async function createTask(projectId: string, input: TaskInput, currentUserId?: string | null) {
   const title = validateTaskTitle(input.title);
   const isCompleted = Boolean(input.isCompleted || input.status === "done");
+  const actorUserId = await resolveActorUserId(currentUserId);
   const createdTask = await createTaskRecord({
     projectId,
     parentTaskId: input.parentTaskId ?? null,
@@ -46,8 +48,8 @@ export async function createTask(projectId: string, input: TaskInput, currentUse
     startDate: toNullableDate(input.startDate),
     dueDate: toNullableDate(input.dueDate),
     memo: input.memo.trim(),
-    createdById: currentUserId ?? null,
-    updatedById: currentUserId ?? null,
+    createdById: actorUserId,
+    updatedById: actorUserId,
   });
 
   revalidatePath("/");
@@ -57,6 +59,7 @@ export async function createTask(projectId: string, input: TaskInput, currentUse
 export async function updateTask(taskId: string, patch: TaskPatch, currentUserId?: string | null) {
   const nextStatus = patch.status ?? "planned";
   const isCompleted = patch.isCompleted ?? nextStatus === "done";
+  const actorUserId = await resolveActorUserId(currentUserId);
 
   const updatedTask = await updateTaskRecord(taskId, {
     title: patch.title ? validateTaskTitle(patch.title) : undefined,
@@ -68,7 +71,7 @@ export async function updateTask(taskId: string, patch: TaskPatch, currentUserId
     startDate: patch.startDate !== undefined ? toNullableDate(patch.startDate) : undefined,
     dueDate: patch.dueDate !== undefined ? toNullableDate(patch.dueDate) : undefined,
     memo: patch.memo?.trim(),
-    updatedById: currentUserId ?? null,
+    updatedById: actorUserId,
   });
 
   revalidatePath("/");
@@ -87,6 +90,7 @@ export async function deleteTask(taskId: string) {
 
 export async function addComment(taskId: string, body: string, authorId: string) {
   const trimmedBody = body.trim();
+  const resolvedAuthorId = await resolveActorUserId(authorId);
 
   if (!trimmedBody) {
     throw new Error("댓글 내용을 입력해 주세요.");
@@ -94,7 +98,7 @@ export async function addComment(taskId: string, body: string, authorId: string)
 
   const comment = await createCommentRecord({
     taskId,
-    authorId,
+    authorId: resolvedAuthorId!,
     body: trimmedBody,
   });
 
