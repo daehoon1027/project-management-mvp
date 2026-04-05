@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  manager
+  member
+}
+
+enum ProjectStatus {
+  planned
+  active
+  internal_review
+  approval_pending
+  done
+  on_hold
+}
+
+enum TaskStatus {
+  planned
+  in_progress
+  in_review
+  approval_pending
+  done
+  on_hold
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum ApprovalStatus {
+  not_required
+  pending
+  approved
+  rejected
+}
+
+enum ActivityEntityType {
+  project
+  task
+  comment
+}
+
+enum NotificationType {
+  due_soon
+  overdue
+  assignee_changed
+  approval_requested
+  comment_added
+}
+
+model Department {
+  id          String    @id @default(cuid())
+  name        String
+  code        String    @unique
+  description String?
+  users       User[]
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id                String          @id @default(cuid())
+  name              String
+  email             String          @unique
+  role              UserRole        @default(member)
+  title             String?
+  isActive          Boolean         @default(true)
+  departmentId      String?
+  department        Department?     @relation(fields: [departmentId], references: [id])
+  ownedProjects     Project[]       @relation("ProjectOwner")
+  createdProjects   Project[]       @relation("ProjectCreatedBy")
+  updatedProjects   Project[]       @relation("ProjectUpdatedBy")
+  assignedTasks     Task[]          @relation("TaskAssignee")
+  createdTasks      Task[]          @relation("TaskCreatedBy")
+  updatedTasks      Task[]          @relation("TaskUpdatedBy")
+  approvals         ApprovalStep[]  @relation("ApprovalApprover")
+  comments          Comment[]
+  activityLogs      ActivityLog[]
+  notifications     Notification[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Project {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?
+  parentId        String?
+  parent          Project?       @relation("ProjectHierarchy", fields: [parentId], references: [id])
+  children        Project[]      @relation("ProjectHierarchy")
+  depth           Int            @default(1)
+  progress        Int            @default(0)
+  color           String         @default("blue")
+  status          ProjectStatus  @default(active)
+  isFavorite      Boolean        @default(false)
+  isArchived      Boolean        @default(false)
+  archivedAt      DateTime?
+  departmentId    String?
+  department      Department?    @relation(fields: [departmentId], references: [id])
+  ownerId         String?
+  owner           User?          @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdById     String?
+  createdBy       User?          @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?          @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
+  tasks           Task[]
+  approvals       ApprovalStep[]
+  activityLogs    ActivityLog[]
+  attachments     Attachment[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([parentId])
+  @@index([departmentId])
+  @@index([status])
+}
+
+model Task {
+  id              String         @id @default(cuid())
+  projectId       String
+  project         Project        @relation(fields: [projectId], references: [id])
+  parentTaskId    String?
+  parentTask      Task?          @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
+  subtasks        Task[]         @relation("TaskHierarchy")
+  title           String
+  description     String?
+  assigneeId      String?
+  assignee        User?          @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  priority        Priority       @default(medium)
+  status          TaskStatus     @default(planned)
+  isCompleted     Boolean        @default(false)
+  startDate       DateTime?
+  dueDate         DateTime?
+  memo            String?
+  createdById     String?
+  createdBy       User?          @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?          @relation("TaskUpdatedBy", fields: [updatedById], references: [id])
+  checklistItems  ChecklistItem[]
+  comments        Comment[]
+  approvals       ApprovalStep[]
+  activityLogs    ActivityLog[]
+  attachments     Attachment[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model ChecklistItem {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  text        String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+model ApprovalStep {
+  id              String          @id @default(cuid())
+  projectId       String?
+  project         Project?        @relation(fields: [projectId], references: [id])
+  taskId          String?
+  task            Task?           @relation(fields: [taskId], references: [id])
+  order           Int             @default(1)
+  status          ApprovalStatus  @default(not_required)
+  approverId      String?
+  approver        User?           @relation("ApprovalApprover", fields: [approverId], references: [id])
+  requestedAt     DateTime?
+  approvedAt      DateTime?
+  note            String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+  @@index([authorId])
+}
+
+model ActivityLog {
+  id            String             @id @default(cuid())
+  entityType    ActivityEntityType
+  entityId      String
+  action        String
+  message       String
+  actorId       String?
+  actor         User?              @relation(fields: [actorId], references: [id])
+  projectId     String?
+  project       Project?           @relation(fields: [projectId], references: [id])
+  taskId        String?
+  task          Task?              @relation(fields: [taskId], references: [id])
+  metadata      Json?
+  createdAt     DateTime           @default(now())
+
+  @@index([entityType, entityId])
+  @@index([projectId])
+  @@index([taskId])
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id])
+  fileName    String
+  storageKey  String
+  mimeType    String
+  size        Int
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+  @@index([taskId])
+}
+
+model Notification {
+  id                String            @id @default(cuid())
+  type              NotificationType
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  title             String
+  body              String
+  isRead            Boolean           @default(false)
+  relatedEntityType ActivityEntityType?
+  relatedEntityId   String?
+  createdAt         DateTime          @default(now())
+
+  @@index([userId, isRead])
+}
