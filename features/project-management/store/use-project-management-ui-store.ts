@@ -37,15 +37,15 @@ export const useProjectManagementUiStore = create<ProjectManagementUiState>((set
   taskFormState: null,
   taskFilters: defaultTaskFilters,
   detailTaskId: null,
-  openRootProjectForm: () => set({ projectFormState: { mode: "create-root" } }),
-  openChildProjectForm: (projectId) => set({ projectFormState: { mode: "create-child", parentId: projectId } }),
-  openEditProjectForm: (projectId) => set({ projectFormState: { mode: "edit", projectId } }),
+  openRootProjectForm: () => set({ projectFormState: { mode: "create-root" }, taskFormState: null }),
+  openChildProjectForm: (projectId) =>
+    set({ projectFormState: { mode: "create-child", parentId: projectId }, taskFormState: null }),
+  openEditProjectForm: (projectId) => set({ projectFormState: { mode: "edit", projectId }, taskFormState: null }),
   closeProjectForm: () => set({ projectFormState: null }),
-  openCreateTaskForm: (projectId) => set({ taskFormState: { mode: "create", projectId } }),
-  openEditTaskForm: (taskId) => set({ taskFormState: { mode: "edit", taskId } }),
+  openCreateTaskForm: (projectId) => set({ taskFormState: { mode: "create", projectId }, projectFormState: null }),
+  openEditTaskForm: (taskId) => set({ taskFormState: { mode: "edit", taskId }, projectFormState: null }),
   closeTaskForm: () => set({ taskFormState: null }),
   setTaskFilters: (taskFilters) => set({ taskFilters }),
   openTaskDetail: (taskId) => set({ detailTaskId: taskId }),
   closeTaskDetail: () => set({ detailTaskId: null }),
 }));
-

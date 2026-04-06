@@ -56,7 +56,7 @@ export function TaskForm({ mode, project, initialTask, isDatabaseMode = false, o
         onSubmit(values);
       }}
     >
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">제목</span>
           <input
@@ -98,7 +98,7 @@ export function TaskForm({ mode, project, initialTask, isDatabaseMode = false, o
         />
       </label>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">시작일</span>
           <input
