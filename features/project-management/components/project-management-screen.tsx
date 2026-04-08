@@ -426,8 +426,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
   const renderInputWorkspace = () => (
     <section className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,_1.2fr)_340px] lg:items-start">
-        <Card className="space-y-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <Card className="space-y-6 lg:min-w-0 lg:flex-1">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-2">
               <span className="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -535,14 +535,16 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           )}
         </Card>
 
-        <ProjectTree
-          projects={projects}
-          tasks={tasks}
-          selectedProjectId={selectedProject?.id ?? null}
-          isDatabaseMode={isDatabaseMode}
-          onDeleteProject={handleDeleteProject}
-          onDuplicateProject={handleDuplicateProject}
-        />
+        <div className="lg:w-[340px] lg:flex-none">
+          <ProjectTree
+            projects={projects}
+            tasks={tasks}
+            selectedProjectId={selectedProject?.id ?? null}
+            isDatabaseMode={isDatabaseMode}
+            onDeleteProject={handleDeleteProject}
+            onDuplicateProject={handleDuplicateProject}
+          />
+        </div>
       </div>
     </section>
   );
@@ -620,8 +622,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "assignee") {
       return (
-        <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,_1fr)] lg:items-start">
-          <aside className="space-y-6">
+        <section className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <aside className="space-y-6 lg:w-[280px] lg:flex-none">
             <AssigneeListPanel
               tasks={tasks}
               selectedAssignee={taskFilters.assignee}
@@ -634,7 +636,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
             />
           </aside>
 
-          <section className="space-y-6">
+          <section className="min-w-0 space-y-6 lg:flex-1">
             <AssigneeWorkspace
               projects={projects}
               tasks={tasks}
@@ -711,8 +713,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,_1fr)] lg:items-start">
-          <aside className="space-y-4 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:w-[300px] lg:flex-none">
             <Card className="overflow-hidden p-0">
               <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
                 <p className="text-xs font-semibold tracking-[0.18em] text-slate-500 dark:text-slate-400">NAVIGATION</p>
@@ -777,7 +779,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
             </Card>
           </aside>
 
-          <section className="min-w-0 space-y-6">
+          <section className="min-w-0 space-y-6 lg:flex-1">
             <Card className="border border-slate-200/80 bg-white/95 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-[0_20px_60px_rgba(2,6,23,0.45)]">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">ACTIVE VIEW</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
