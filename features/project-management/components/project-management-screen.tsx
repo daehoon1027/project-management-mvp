@@ -426,7 +426,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
   const renderInputWorkspace = () => (
     <section className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_340px] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,_1.2fr)_340px] lg:items-start">
         <Card className="space-y-6">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-2">
@@ -620,7 +620,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "assignee") {
       return (
-        <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+        <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,_1fr)] lg:items-start">
           <aside className="space-y-6">
             <AssigneeListPanel
               tasks={tasks}
@@ -711,7 +711,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,_1fr)] lg:items-start">
           <aside className="space-y-4 lg:sticky lg:top-6">
             <Card className="overflow-hidden p-0">
               <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
