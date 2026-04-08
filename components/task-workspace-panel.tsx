@@ -150,9 +150,9 @@ export function TaskWorkspacePanel({
           >
             <option value="all">전체</option>
             <option value="planned">예정</option>
-            <option value="in_progress">진행중</option>
-            <option value="in_review">검토중</option>
-            <option value="approval_pending">승인대기</option>
+            <option value="in_progress">진행 중</option>
+            <option value="in_review">검토 중</option>
+            <option value="approval_pending">승인 대기</option>
             <option value="done">완료</option>
             <option value="on_hold">보류</option>
           </select>
@@ -206,7 +206,7 @@ export function TaskWorkspacePanel({
           </span>
           {isDatabaseMode ? (
             <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/20 dark:text-sky-300">
-              DB 모드에서는 복제와 담당자 직접 입력을 잠시 비활성화했습니다.
+              DB 모드에서는 복제와 담당자 직접 입력이 일부 제한됩니다.
             </span>
           ) : null}
         </div>
@@ -227,7 +227,7 @@ export function TaskWorkspacePanel({
       </div>
 
       {viewMode === "list" ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {tasks.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
               {emptyMessage}
@@ -238,7 +238,7 @@ export function TaskWorkspacePanel({
                 key={task.id}
                 onClick={() => onOpenTask(task.id)}
                 className={cn(
-                  "cursor-pointer rounded-[28px] border p-5 transition",
+                  "cursor-pointer rounded-[24px] border px-4 py-4 transition",
                   isOverdue(task)
                     ? "border-rose-200 bg-gradient-to-r from-rose-50 to-white dark:border-rose-900 dark:from-rose-950/20 dark:to-slate-950"
                     : isDueSoon(task)
@@ -246,107 +246,110 @@ export function TaskWorkspacePanel({
                       : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950",
                 )}
               >
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="flex min-w-0 flex-1 gap-4">
-                    <input
-                      type="checkbox"
-                      checked={task.isCompleted}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={() =>
-                        onPatchTask(task.id, {
-                          isCompleted: !task.isCompleted,
-                          status: !task.isCompleted ? "done" : task.status === "done" ? "planned" : task.status,
-                        })
-                      }
-                      className="mt-1 h-5 w-5 rounded border-slate-300 text-brand-500"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <InlineEditableText
-                          value={task.title}
-                          onSave={(value) => onPatchTask(task.id, { title: value })}
-                          className={cn(
-                            "text-lg font-semibold text-slate-900 dark:text-white",
-                            task.isCompleted && "line-through opacity-60",
-                          )}
-                          inputClassName="w-full text-lg font-semibold"
-                        />
-                        <StatusBadge status={task.status} />
-                        <PriorityBadge priority={task.priority} />
-                      </div>
-                      {renderTaskContext ? (
-                        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                          {renderTaskContext(task)}
-                        </div>
-                      ) : null}
-                      <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        {task.description || "설명이 없습니다."}
-                      </p>
-                      <div className="mt-5 grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-4">
-                        <div className="rounded-2xl bg-slate-50 px-3 py-3 dark:bg-slate-900">
-                          <p className="font-medium text-slate-700 dark:text-slate-200">담당자</p>
+                <div className="flex min-w-0 gap-3">
+                  <input
+                    type="checkbox"
+                    checked={task.isCompleted}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={() =>
+                      onPatchTask(task.id, {
+                        isCompleted: !task.isCompleted,
+                        status: !task.isCompleted ? "done" : task.status === "done" ? "planned" : task.status,
+                      })
+                    }
+                    className="mt-1 h-5 w-5 rounded border-slate-300 text-brand-500"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
                           <InlineEditableText
-                            value={task.assignee}
-                            placeholder="담당자 미지정"
-                            onSave={(value) => onPatchTask(task.id, { assignee: value })}
-                            className="mt-1 text-sm text-slate-500 dark:text-slate-400"
-                            inputClassName="mt-1 w-full text-sm"
-                            disabled={isDatabaseMode}
+                            value={task.title}
+                            onSave={(value) => onPatchTask(task.id, { title: value })}
+                            className={cn(
+                              "text-base font-semibold text-slate-900 dark:text-white",
+                              task.isCompleted && "line-through opacity-60",
+                            )}
+                            inputClassName="w-full text-base font-semibold"
                           />
+                          <StatusBadge status={task.status} />
+                          <PriorityBadge priority={task.priority} />
                         </div>
-                        <div className="rounded-2xl bg-slate-50 px-3 py-3 dark:bg-slate-900">
-                          <p className="font-medium text-slate-700 dark:text-slate-200">일정</p>
-                          <p className="mt-1 text-slate-500 dark:text-slate-400">
-                            {formatDate(task.startDate)} ~ {formatDate(task.dueDate)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 px-3 py-3 dark:bg-slate-900">
-                          <p className="font-medium text-slate-700 dark:text-slate-200">마감 기준</p>
-                          <p className="mt-1 text-slate-500 dark:text-slate-400">
-                            {formatRelativeDateLabel(task.dueDate)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 px-3 py-3 dark:bg-slate-900">
-                          <p className="font-medium text-slate-700 dark:text-slate-200">메모</p>
-                          <p className="mt-1 line-clamp-2 text-slate-500 dark:text-slate-400">{task.memo || "-"}</p>
-                        </div>
+
+                        {renderTaskContext ? (
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {renderTaskContext(task)}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 xl:justify-end">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onEditTask(task.id);
+                          }}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          수정
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onDuplicateTask(task.id);
+                          }}
+                          disabled={isDatabaseMode}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          복제
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (window.confirm("이 Task를 삭제할까요?")) {
+                              onDeleteTask(task.id);
+                            }
+                          }}
+                          className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:hover:bg-rose-950/30"
+                        >
+                          삭제
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2 xl:justify-end">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onEditTask(task.id);
-                      }}
-                      className="rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                    >
-                      수정
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onDuplicateTask(task.id);
-                      }}
-                      disabled={isDatabaseMode}
-                      className="rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                    >
-                      복제
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        if (window.confirm("이 Task를 삭제할까요?")) {
-                          onDeleteTask(task.id);
-                        }
-                      }}
-                      className="rounded-2xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:hover:bg-rose-950/30"
-                    >
-                      삭제
-                    </button>
+
+                    <p className="mt-2 text-sm leading-5 text-slate-600 dark:text-slate-300">{task.description || "설명 없음"}</p>
+
+                    <div className="mt-3 grid gap-2 text-sm md:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-[18px] border border-slate-200/80 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">담당자</p>
+                        <InlineEditableText
+                          value={task.assignee}
+                          placeholder="담당자 미지정"
+                          onSave={(value) => onPatchTask(task.id, { assignee: value })}
+                          className="mt-1 text-sm text-slate-700 dark:text-slate-200"
+                          inputClassName="mt-1 w-full text-sm"
+                          disabled={isDatabaseMode}
+                        />
+                      </div>
+                      <div className="rounded-[18px] border border-slate-200/80 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">일정</p>
+                        <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                          {formatDate(task.startDate)} ~ {formatDate(task.dueDate)}
+                        </p>
+                      </div>
+                      <div className="rounded-[18px] border border-slate-200/80 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">마감 기준</p>
+                        <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{formatRelativeDateLabel(task.dueDate)}</p>
+                      </div>
+                      <div className="rounded-[18px] border border-slate-200/80 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">메모</p>
+                        <p className="mt-1 line-clamp-2 text-sm text-slate-700 dark:text-slate-200">{task.memo || "-"}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </article>
