@@ -22,8 +22,8 @@ export function ProjectTree({
   tasks,
   selectedProjectId,
   isDatabaseMode = false,
-  onDeleteProject,
-  onDuplicateProject,
+  onDeleteProject: _onDeleteProject,
+  onDuplicateProject: _onDuplicateProject,
 }: ProjectTreeProps) {
   const expandedProjectIds = useProjectStore((state) => state.expandedProjectIds);
   const selectProject = useProjectStore((state) => state.selectProject);
@@ -48,6 +48,23 @@ export function ProjectTree({
       ),
     [projects, tasks],
   );
+  const directTaskPreviewByProjectId = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => [
+          project.id,
+          tasks
+            .filter((task) => task.projectId === project.id)
+            .slice(0, 3)
+            .map((task) => ({
+              id: task.id,
+              title: task.title,
+              isCompleted: task.isCompleted,
+            })),
+        ]),
+      ),
+    [projects, tasks],
+  );
 
   const hasChildren = (projectId: string) => projects.some((project) => project.parentId === projectId);
 
@@ -55,8 +72,8 @@ export function ProjectTree({
     <Card className="overflow-hidden p-0">
       <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-4 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">프로젝트 트리</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">계층 구조와 연결된 Task 현황을 함께 보여줍니다.</p>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">프로젝트 맵</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">계층과 직속 Task를 한 줄씩 바로 읽을 수 있게 정리했습니다.</p>
         </div>
       </div>
 
@@ -65,6 +82,8 @@ export function ProjectTree({
           const childExists = hasChildren(project.id);
           const expanded = expandedProjectIds.includes(project.id);
           const taskSummary = taskSummaryByProjectId.get(project.id) ?? { total: 0, open: 0 };
+          const directTaskPreview = directTaskPreviewByProjectId.get(project.id) ?? [];
+          const childCount = projects.filter((candidate) => candidate.parentId === project.id).length;
 
           if (isProjectHiddenByCollapsedAncestor(projects, project, expandedProjectIds)) {
             return null;
@@ -74,9 +93,9 @@ export function ProjectTree({
             <article
               key={project.id}
               className={cn(
-                "relative rounded-[26px] border p-4 transition",
+                "relative rounded-[22px] border p-3.5 transition",
                 selectedProjectId === project.id
-                  ? "border-brand-300 bg-gradient-to-r from-brand-50 to-white shadow-[0_14px_32px_rgba(47,124,255,0.12)] dark:border-brand-700 dark:from-brand-950/20 dark:to-slate-950"
+                  ? "border-brand-400 bg-gradient-to-r from-brand-50 via-white to-sky-50 shadow-[0_16px_36px_rgba(47,124,255,0.14)] dark:border-brand-700 dark:from-brand-950/20 dark:via-slate-950 dark:to-slate-950"
                   : "border-slate-200/90 bg-white hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950",
               )}
               style={{ marginLeft: `${(project.depth - 1) * 14}px` }}
@@ -101,54 +120,60 @@ export function ProjectTree({
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <button type="button" onClick={() => selectProject(project.id)} className="w-full text-left">
-                    <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                    <button type="button" onClick={() => selectProject(project.id)} className="min-w-0 flex-1 text-left">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                             Level {project.depth}
                           </span>
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            하위 {childCount}
+                          </span>
                           <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
-                            Task {taskSummary.total}
+                            전체 Task {taskSummary.total}
                           </span>
                           <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                             미완료 {taskSummary.open}
                           </span>
                         </div>
-                        <h3 className="mt-2 truncate text-[15px] font-semibold text-slate-900 dark:text-white">{project.name}</h3>
-                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{project.description}</p>
+                        <h3 className="mt-2 truncate text-[16px] font-semibold text-slate-900 dark:text-white">{project.name}</h3>
+                        <p className="mt-1 line-clamp-1 text-sm text-slate-500 dark:text-slate-400">
+                          {project.description || "프로젝트 설명 없음"}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {directTaskPreview.length > 0 ? (
+                            directTaskPreview.map((task) => (
+                              <span
+                                key={task.id}
+                                className={cn(
+                                  "rounded-full border px-3 py-1 text-xs font-semibold",
+                                  task.isCompleted
+                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-300"
+                                    : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200",
+                                )}
+                              >
+                                {task.title}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="rounded-full border border-dashed border-slate-300 px-3 py-1 text-xs font-medium text-slate-400 dark:border-slate-700 dark:text-slate-500">
+                              직속 Task 없음
+                            </span>
+                          )}
+                        </div>
                       </div>
+                    </button>
 
-                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                        {project.progress}%
-                      </span>
+                    <div className="min-w-[180px] rounded-[18px] border border-slate-200/80 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <span>진행률</span>
+                        <span>{project.progress}%</span>
+                      </div>
+                      <div className="mt-2">
+                        <ProgressBar value={project.progress} />
+                      </div>
                     </div>
-                  </button>
-
-                  <div className="mt-4">
-                    <ProgressBar value={project.progress} />
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onDuplicateProject(project.id)}
-                      disabled={isDatabaseMode}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                    >
-                      복제
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm("프로젝트와 하위 프로젝트, Task를 모두 삭제할까요?")) {
-                          onDeleteProject(project.id);
-                        }
-                      }}
-                      className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:hover:bg-rose-950/30"
-                    >
-                      삭제
-                    </button>
                   </div>
                 </div>
               </div>

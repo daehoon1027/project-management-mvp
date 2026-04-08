@@ -382,27 +382,27 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   return (
     <main className="min-h-screen px-4 py-6 text-slate-900 md:px-6 lg:px-8 dark:text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="overflow-hidden rounded-[34px] border border-slate-900 bg-[linear-gradient(135deg,#020617_0%,#0f172a_45%,#1d4ed8_100%)] px-6 py-8 text-white shadow-[0_25px_60px_rgba(15,23,42,0.34)]">
+        <section className="overflow-hidden rounded-[34px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#e0f2fe_42%,#bfdbfe_100%)] px-6 py-8 text-slate-950 shadow-[0_25px_60px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-[linear-gradient(135deg,#0f172a_0%,#172554_45%,#1d4ed8_100%)] dark:text-white dark:shadow-[0_25px_60px_rgba(15,23,42,0.34)]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex w-fit rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-50">
+                <span className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-800 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
                   PROJECT OPERATIONS
                 </span>
-                <span className="inline-flex rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold text-slate-50">
+                <span className="inline-flex rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
                   {isDatabaseMode ? "POSTGRESQL CONNECTED" : "SAMPLE DATA MODE"}
                 </span>
                 {isMutating ? (
-                  <span className="inline-flex rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold text-slate-50">
+                  <span className="inline-flex rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
                     SAVING...
                   </span>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-50 drop-shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
+                <h1 className="inline-flex rounded-[24px] bg-slate-950 px-5 py-3 text-3xl font-semibold tracking-tight text-white shadow-[0_18px_45px_rgba(15,23,42,0.18)] dark:bg-white/10 dark:text-slate-50 dark:shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
                   프로젝트 관리 워크스페이스
                 </h1>
-                <p className="max-w-3xl text-sm leading-6 text-slate-200">
+                <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-200">
                   프로젝트 트리, KPI 대시보드, 실행 Task를 한 화면에서 관리합니다. 현재는
                   {isDatabaseMode ? " PostgreSQL 서버 데이터" : " 샘플 데이터"}를 기준으로 동작합니다.
                 </p>
@@ -413,7 +413,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               <button
                 type="button"
                 onClick={() => downloadTasksCsv(projects, tasks, null)}
-                className="rounded-2xl border border-white/20 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                className="rounded-2xl border border-slate-300 bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:border-white/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
               >
                 전체 CSV 다운로드
               </button>
@@ -516,6 +516,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     filters={taskFilters}
                     isDatabaseMode={isDatabaseMode}
                     onFiltersChange={handleTaskFiltersChange}
+                    onDeleteProject={handleDeleteProject}
                     onEditTask={handleOpenEditTaskForm}
                     onDeleteTask={handleDeleteTask}
                     onOpenTask={openTaskDetail}

@@ -16,6 +16,7 @@ type ProjectDetailProps = {
   filters: TaskFilters;
   isDatabaseMode?: boolean;
   onFiltersChange: Dispatch<SetStateAction<TaskFilters>>;
+  onDeleteProject: (projectId: string) => void;
   onEditTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
   onOpenTask: (taskId: string) => void;
@@ -31,6 +32,7 @@ export function ProjectDetail({
   filters,
   isDatabaseMode = false,
   onFiltersChange,
+  onDeleteProject,
   onEditTask,
   onDeleteTask,
   onOpenTask,
@@ -78,6 +80,7 @@ export function ProjectDetail({
   const descendantProjects = selectedProject
     ? projects.filter((project) => relatedProjectIds.includes(project.id) && project.id !== selectedProject.id)
     : [];
+  const scopedProjects = selectedProject ? projects.filter((project) => relatedProjectIds.includes(project.id)) : [];
   const directProjectTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id).length : 0;
   const openTaskCount = baseProjectTasks.filter((task) => !task.isCompleted).length;
   const assigneeOptions = useMemo(
@@ -137,13 +140,34 @@ export function ProjectDetail({
               >
                 CSV 다운로드
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("프로젝트와 하위 프로젝트, Task를 모두 삭제할까요?")) {
+                    onDeleteProject(selectedProject.id);
+                  }
+                }}
+                className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:hover:bg-rose-950/30"
+              >
+                프로젝트 삭제
+              </button>
             </div>
           </div>
         </div>
 
         <div className="border-b border-slate-200/90 px-6 py-4 dark:border-slate-800">
           <div className="rounded-[24px] border border-slate-200/80 bg-slate-50 px-4 py-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-            선택한 프로젝트를 기준으로 하위 프로젝트 {descendantProjects.length}개와 연결된 Task를 함께 보여줍니다.
+            <p>선택한 프로젝트를 기준으로 하위 프로젝트 {descendantProjects.length}개와 연결된 Task를 함께 보여줍니다.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {scopedProjects.map((project) => (
+                <span
+                  key={project.id}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                >
+                  {project.name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
