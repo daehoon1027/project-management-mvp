@@ -159,15 +159,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     openEditTaskForm(taskId);
   };
 
-  const handleQuickTaskAction = () => {
-    if (selectedProject) {
-      handleOpenCreateTaskForm(selectedProject.id);
-      return;
-    }
-
-    handleOpenRootProjectForm();
-  };
-
   const handleStartTaskEntry = () => {
     if (!selectedProject) {
       window.alert("아래 프로젝트 트리에서 프로젝트를 먼저 선택해 주세요.");
@@ -358,50 +349,38 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   return (
     <main className="min-h-screen px-4 py-6 text-slate-900 md:px-6 lg:px-8 dark:text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="overflow-hidden rounded-[34px] border border-slate-200 bg-[linear-gradient(135deg,#020617_0%,#0f172a_42%,#1d4ed8_100%)] px-6 py-8 text-white shadow-[0_25px_60px_rgba(15,23,42,0.22)] dark:border-slate-800">
+        <section className="overflow-hidden rounded-[34px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#1e3a8a_100%)] px-6 py-8 text-white shadow-[0_25px_60px_rgba(15,23,42,0.26)] dark:border-slate-800">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium tracking-[0.14em] text-slate-200">
+                <span className="inline-flex w-fit rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium tracking-[0.14em] text-white">
                   PROJECT OPERATIONS
                 </span>
-                <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-slate-100">
+                <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium text-white">
                   {isDatabaseMode ? "POSTGRESQL CONNECTED" : "SAMPLE DATA MODE"}
                 </span>
                 {isMutating ? (
-                  <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-slate-100">
+                  <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium text-white">
                     SAVING...
                   </span>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight">프로젝트 관리 워크스페이스</h1>
-                <p className="max-w-3xl text-sm leading-6 text-slate-300">
+                <h1 className="text-3xl font-semibold tracking-tight text-white drop-shadow-[0_3px_12px_rgba(15,23,42,0.22)]">
+                  프로젝트 관리 워크스페이스
+                </h1>
+                <p className="max-w-3xl text-sm leading-6 text-slate-100">
                   프로젝트 트리, KPI 대시보드, 실행 Task를 한 화면에서 관리합니다. 현재는
                   {isDatabaseMode ? " PostgreSQL 서버 데이터" : " 샘플 데이터"}를 기준으로 동작합니다.
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <button
-                type="button"
-                onClick={handleOpenRootProjectForm}
-                className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-              >
-                루트 프로젝트 추가
-              </button>
-              <button
-                type="button"
-                onClick={handleQuickTaskAction}
-                className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
-              >
-                Task 빠른 추가
-              </button>
+            <div className="grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => downloadTasksCsv(projects, tasks, null)}
-                className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+                className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
               >
                 전체 CSV 다운로드
               </button>
@@ -562,35 +541,73 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInputSection("project");
-                      closeTaskForm();
-                    }}
-                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                      inputSection === "project"
-                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white"
-                        : "text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                    }`}
-                  >
-                    프로젝트 입력
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInputSection("task");
-                      closeProjectForm();
-                    }}
-                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                      inputSection === "task"
-                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white"
-                        : "text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                    }`}
-                  >
-                    Task 입력
-                  </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInputSection("project");
+                        closeTaskForm();
+                      }}
+                      className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                        inputSection === "project"
+                          ? "bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white"
+                          : "text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                      }`}
+                    >
+                      프로젝트 입력
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInputSection("task");
+                        closeProjectForm();
+                      }}
+                      className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                        inputSection === "task"
+                          ? "bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white"
+                          : "text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                      }`}
+                    >
+                      Task 입력
+                    </button>
+                  </div>
+
+                  {inputSection === "project" ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleOpenRootProjectForm}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      >
+                        루트 생성
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectedProject && handleOpenChildProjectForm(selectedProject.id)}
+                        disabled={!selectedProject}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      >
+                        하위 추가
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectedProject && handleOpenEditProjectForm(selectedProject.id)}
+                        disabled={!selectedProject}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      >
+                        프로젝트 수정
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleStartTaskEntry}
+                      className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    >
+                      새 Task
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -612,119 +629,77 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               </div>
 
               {inputSection === "project" ? (
-                <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
-                  <div className="space-y-3 rounded-[26px] border border-slate-200/90 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">프로젝트 입력 방식</p>
-                    <button
-                      type="button"
-                      onClick={handleOpenRootProjectForm}
-                      className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-                    >
-                      루트 프로젝트 생성
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectedProject && handleOpenChildProjectForm(selectedProject.id)}
-                      disabled={!selectedProject}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                    >
-                      선택 프로젝트 하위 추가
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectedProject && handleOpenEditProjectForm(selectedProject.id)}
-                      disabled={!selectedProject}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                    >
-                      선택 프로젝트 수정
-                    </button>
-                  </div>
-
-                  <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-                    {projectFormState ? (
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {projectFormState.mode === "edit"
-                              ? "프로젝트 수정"
-                              : projectFormState.mode === "create-child"
-                                ? "하위 프로젝트 생성"
-                                : "루트 프로젝트 생성"}
-                          </h3>
-                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            {projectFormState.mode === "create-child"
-                              ? "선택한 프로젝트 아래에 새 하위 프로젝트를 추가합니다."
-                              : "프로젝트 기본 정보를 입력해 주세요."}
-                          </p>
-                        </div>
-                        <ProjectForm
-                          mode={projectFormState.mode === "edit" ? "edit" : "create"}
-                          parentProject={
-                            projectFormState?.mode === "create-child"
-                              ? projects.find((project) => project.id === projectFormState.parentId) ?? null
-                              : null
-                          }
-                          initialProject={editingProject}
-                          onSubmit={handleProjectFormSubmit}
-                          onCancel={closeProjectForm}
-                        />
+                <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+                  {projectFormState ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          {projectFormState.mode === "edit"
+                            ? "프로젝트 수정"
+                            : projectFormState.mode === "create-child"
+                              ? "하위 프로젝트 생성"
+                              : "루트 프로젝트 생성"}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          {projectFormState.mode === "create-child"
+                            ? "선택한 프로젝트 아래에 새 하위 프로젝트를 추가합니다."
+                            : "프로젝트 기본 정보를 입력해 주세요."}
+                        </p>
                       </div>
-                    ) : (
-                      <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                        왼쪽에서 프로젝트 입력 방식을 선택하면 여기서 하나의 프로젝트 입력 폼만 열립니다.
-                      </div>
-                    )}
-                  </div>
+                      <ProjectForm
+                        mode={projectFormState.mode === "edit" ? "edit" : "create"}
+                        parentProject={
+                          projectFormState?.mode === "create-child"
+                            ? projects.find((project) => project.id === projectFormState.parentId) ?? null
+                            : null
+                        }
+                        initialProject={editingProject}
+                        onSubmit={handleProjectFormSubmit}
+                        onCancel={closeProjectForm}
+                      />
+                    </div>
+                  ) : (
+                    <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+                      상단의 작은 프로젝트 버튼을 눌러 여기서 하나의 프로젝트 입력 폼만 열어 주세요.
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
-                  <div className="space-y-3 rounded-[26px] border border-slate-200/90 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Task 입력 방식</p>
-                    <button
-                      type="button"
-                      onClick={handleStartTaskEntry}
-                      className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-                    >
-                      새 Task 입력 시작
-                    </button>
-                    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                      대상 프로젝트
-                      <p className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {selectedProject?.name ?? "먼저 아래 트리에서 선택"}
-                      </p>
+                <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    대상 프로젝트
+                    <p className="mt-1 font-semibold text-slate-900 dark:text-white">
+                      {selectedProject?.name ?? "먼저 아래 트리에서 선택"}
+                    </p>
+                  </div>
+                  {taskFormState ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          {taskFormState.mode === "edit" ? "Task 수정" : "Task 생성"}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          일정, 우선순위, 상태, 메모까지 함께 관리할 수 있습니다.
+                        </p>
+                      </div>
+                      <TaskForm
+                        mode={taskFormState.mode === "edit" ? "edit" : "create"}
+                        project={
+                          taskFormState.mode === "create"
+                            ? projects.find((project) => project.id === taskFormState.projectId) ?? null
+                            : projects.find((project) => project.id === editingTask?.projectId) ?? null
+                        }
+                        initialTask={editingTask}
+                        isDatabaseMode={isDatabaseMode}
+                        onSubmit={handleTaskFormSubmit}
+                        onCancel={closeTaskForm}
+                      />
                     </div>
-                  </div>
-
-                  <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-                    {taskFormState ? (
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {taskFormState.mode === "edit" ? "Task 수정" : "Task 생성"}
-                          </h3>
-                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            일정, 우선순위, 상태, 메모까지 함께 관리할 수 있습니다.
-                          </p>
-                        </div>
-                        <TaskForm
-                          mode={taskFormState.mode === "edit" ? "edit" : "create"}
-                          project={
-                            taskFormState.mode === "create"
-                              ? projects.find((project) => project.id === taskFormState.projectId) ?? null
-                              : projects.find((project) => project.id === editingTask?.projectId) ?? null
-                          }
-                          initialTask={editingTask}
-                          isDatabaseMode={isDatabaseMode}
-                          onSubmit={handleTaskFormSubmit}
-                          onCancel={closeTaskForm}
-                        />
-                      </div>
-                    ) : (
-                      <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                        새 Task 입력 시작을 누르면 여기서 하나의 Task 입력 폼만 열립니다.
-                      </div>
-                    )}
-                  </div>
+                  ) : (
+                    <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+                      상단의 `새 Task` 버튼을 눌러 여기서 하나의 Task 입력 폼만 열어 주세요.
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
