@@ -1,30 +1,27 @@
 "use client";
 
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { flattenProjects, isProjectHiddenByCollapsedAncestor } from "@/lib/project-tree";
+import { flattenProjects, getDescendantProjectIds, isProjectHiddenByCollapsedAncestor } from "@/lib/project-tree";
 import { cn } from "@/lib/utils";
 import { useProjectStore } from "@/store/use-project-store";
-import type { Project } from "@/types";
+import type { Project, Task } from "@/types";
 
 type ProjectTreeProps = {
   projects: Project[];
+  tasks: Task[];
   selectedProjectId: string | null;
   isDatabaseMode?: boolean;
-  onCreateRoot: () => void;
-  onCreateChild: (projectId: string) => void;
-  onEditProject: (projectId: string) => void;
   onDeleteProject: (projectId: string) => void;
   onDuplicateProject: (projectId: string) => void;
 };
 
 export function ProjectTree({
   projects,
+  tasks,
   selectedProjectId,
   isDatabaseMode = false,
-  onCreateRoot,
-  onCreateChild,
-  onEditProject,
   onDeleteProject,
   onDuplicateProject,
 }: ProjectTreeProps) {
@@ -33,23 +30,33 @@ export function ProjectTree({
   const toggleProjectExpanded = useProjectStore((state) => state.toggleProjectExpanded);
 
   const tree = flattenProjects(projects);
+  const taskSummaryByProjectId = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => {
+          const relatedProjectIds = new Set([project.id, ...getDescendantProjectIds(projects, project.id)]);
+          const relatedTasks = tasks.filter((task) => relatedProjectIds.has(task.projectId));
+
+          return [
+            project.id,
+            {
+              total: relatedTasks.length,
+              open: relatedTasks.filter((task) => !task.isCompleted).length,
+            },
+          ];
+        }),
+      ),
+    [projects, tasks],
+  );
+
   const hasChildren = (projectId: string) => projects.some((project) => project.parentId === projectId);
 
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-4 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">프로젝트 트리</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">계층 구조와 진행 상태를 한 번에 관리합니다.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onCreateRoot}
-            className="rounded-2xl bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-          >
-            + 루트
-          </button>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">프로젝트 트리</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">계층 구조와 연결된 Task 현황을 함께 보여줍니다.</p>
         </div>
       </div>
 
@@ -57,6 +64,7 @@ export function ProjectTree({
         {tree.map((project) => {
           const childExists = hasChildren(project.id);
           const expanded = expandedProjectIds.includes(project.id);
+          const taskSummary = taskSummaryByProjectId.get(project.id) ?? { total: 0, open: 0 };
 
           if (isProjectHiddenByCollapsedAncestor(projects, project, expandedProjectIds)) {
             return null;
@@ -96,17 +104,19 @@ export function ProjectTree({
                   <button type="button" onClick={() => selectProject(project.id)} className="w-full text-left">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                             Level {project.depth}
                           </span>
+                          <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+                            Task {taskSummary.total}
+                          </span>
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                            미완료 {taskSummary.open}
+                          </span>
                         </div>
-                        <h3 className="mt-2 truncate text-[15px] font-semibold text-slate-900 dark:text-white">
-                          {project.name}
-                        </h3>
-                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                          {project.description}
-                        </p>
+                        <h3 className="mt-2 truncate text-[15px] font-semibold text-slate-900 dark:text-white">{project.name}</h3>
+                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{project.description}</p>
                       </div>
 
                       <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
@@ -122,21 +132,6 @@ export function ProjectTree({
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => onCreateChild(project.id)}
-                      disabled={project.depth >= 4}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                    >
-                      하위 추가
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onEditProject(project.id)}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                    >
-                      수정
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => onDuplicateProject(project.id)}
                       disabled={isDatabaseMode}
                       className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
@@ -146,7 +141,7 @@ export function ProjectTree({
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm("프로젝트와 하위 프로젝트, Task를 모두 삭제합니다. 계속할까요?")) {
+                        if (window.confirm("프로젝트와 하위 프로젝트, Task를 모두 삭제할까요?")) {
                           onDeleteProject(project.id);
                         }
                       }}

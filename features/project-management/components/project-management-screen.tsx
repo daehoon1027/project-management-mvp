@@ -19,6 +19,7 @@ import { addCommentAction, createTaskAction, deleteTaskAction, updateTaskAction 
 import type { ProjectManagementPageData } from "@/features/project-management/server/dto/project-management.dto";
 import { useProjectManagementUiStore } from "@/features/project-management/store/use-project-management-ui-store";
 import { downloadTasksCsv } from "@/lib/export";
+import { getDescendantProjectIds } from "@/lib/project-tree";
 import { useMounted } from "@/hooks/use-mounted";
 import { useTheme } from "@/hooks/use-theme";
 import { useProjectStore } from "@/store/use-project-store";
@@ -36,6 +37,7 @@ type MutationResult = {
 type WorkspaceMode = "browse" | "input";
 type BrowseMode = "project" | "assignee";
 type InputSection = "project" | "task";
+type ProjectEntryMode = "create-root" | "create-child" | "edit";
 
 export function ProjectManagementScreen({ pageData }: ProjectManagementScreenProps) {
   const mounted = useMounted();
@@ -44,6 +46,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("browse");
   const [browseMode, setBrowseMode] = useState<BrowseMode>("project");
   const [inputSection, setInputSection] = useState<InputSection>("project");
+  const [projectEntryMode, setProjectEntryMode] = useState<ProjectEntryMode>("create-root");
   const isDatabaseMode = pageData.source === "database";
   const { isDarkMode, toggleTheme } = useTheme();
   const syncWorkspaceData = useProjectStore((state) => state.syncWorkspaceData);
@@ -95,6 +98,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   useEffect(() => {
     if (projectFormState) {
       setInputSection("project");
+      setProjectEntryMode(projectFormState.mode);
       return;
     }
 
@@ -104,9 +108,13 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   }, [projectFormState, taskFormState]);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? projects[0] ?? null;
+  const selectedProjectScopeIds = useMemo(
+    () => (selectedProject ? [selectedProject.id, ...getDescendantProjectIds(projects, selectedProject.id)] : []),
+    [projects, selectedProject],
+  );
   const selectedProjectTasks = useMemo(
-    () => (selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : []),
-    [selectedProject, tasks],
+    () => (selectedProject ? tasks.filter((task) => selectedProjectScopeIds.includes(task.projectId)) : []),
+    [selectedProject, selectedProjectScopeIds, tasks],
   );
   const selectedProjectOpenTasks = selectedProjectTasks.filter((task) => !task.isCompleted).length;
 
@@ -124,6 +132,12 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     () => tasks.find((task) => task.id === detailTaskId) ?? null,
     [detailTaskId, tasks],
   );
+
+  useEffect(() => {
+    if (!selectedProject && projectEntryMode !== "create-root") {
+      setProjectEntryMode("create-root");
+    }
+  }, [projectEntryMode, selectedProject]);
 
   const handleTaskFiltersChange = (nextFilters: SetStateAction<TaskFilters>) => {
     setTaskFilters(typeof nextFilters === "function" ? nextFilters(taskFilters) : nextFilters);
@@ -157,6 +171,25 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     setWorkspaceMode("input");
     setInputSection("task");
     openEditTaskForm(taskId);
+  };
+
+  const handleStartProjectEntry = () => {
+    if (projectEntryMode === "create-root") {
+      handleOpenRootProjectForm();
+      return;
+    }
+
+    if (!selectedProject) {
+      window.alert("프로젝트를 먼저 선택해 주세요.");
+      return;
+    }
+
+    if (projectEntryMode === "create-child") {
+      handleOpenChildProjectForm(selectedProject.id);
+      return;
+    }
+
+    handleOpenEditProjectForm(selectedProject.id);
   };
 
   const handleStartTaskEntry = () => {
@@ -349,27 +382,27 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   return (
     <main className="min-h-screen px-4 py-6 text-slate-900 md:px-6 lg:px-8 dark:text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="overflow-hidden rounded-[34px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_52%,#1e3a8a_100%)] px-6 py-8 text-white shadow-[0_25px_60px_rgba(15,23,42,0.26)] dark:border-slate-800">
+        <section className="overflow-hidden rounded-[34px] border border-slate-900 bg-[linear-gradient(135deg,#020617_0%,#0f172a_45%,#1d4ed8_100%)] px-6 py-8 text-white shadow-[0_25px_60px_rgba(15,23,42,0.34)]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex w-fit rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium tracking-[0.14em] text-white">
+                <span className="inline-flex w-fit rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-50">
                   PROJECT OPERATIONS
                 </span>
-                <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium text-white">
+                <span className="inline-flex rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold text-slate-50">
                   {isDatabaseMode ? "POSTGRESQL CONNECTED" : "SAMPLE DATA MODE"}
                 </span>
                 {isMutating ? (
-                  <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-medium text-white">
+                  <span className="inline-flex rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-semibold text-slate-50">
                     SAVING...
                   </span>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-white drop-shadow-[0_3px_12px_rgba(15,23,42,0.22)]">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-50 drop-shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
                   프로젝트 관리 워크스페이스
                 </h1>
-                <p className="max-w-3xl text-sm leading-6 text-slate-100">
+                <p className="max-w-3xl text-sm leading-6 text-slate-200">
                   프로젝트 트리, KPI 대시보드, 실행 Task를 한 화면에서 관리합니다. 현재는
                   {isDatabaseMode ? " PostgreSQL 서버 데이터" : " 샘플 데이터"}를 기준으로 동작합니다.
                 </p>
@@ -380,7 +413,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               <button
                 type="button"
                 onClick={() => downloadTasksCsv(projects, tasks, null)}
-                className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+                className="rounded-2xl border border-white/20 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
               >
                 전체 CSV 다운로드
               </button>
@@ -451,7 +484,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                 </div>
               ) : (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                  입력 탭에서는 폼이 아래에서 바로 열립니다.
+                  입력은 상단 입력 워크스페이스 한 곳에서만 시작합니다.
                 </div>
               )}
             </div>
@@ -459,20 +492,44 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
         </div>
 
         {workspaceMode === "browse" ? (
-          <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-            <aside className="space-y-6">
-              {browseMode === "project" ? (
-                <ProjectTree
-                  projects={projects}
-                  selectedProjectId={selectedProject?.id ?? null}
-                  isDatabaseMode={isDatabaseMode}
-                  onCreateRoot={handleOpenRootProjectForm}
-                  onCreateChild={handleOpenChildProjectForm}
-                  onEditProject={handleOpenEditProjectForm}
-                  onDeleteProject={handleDeleteProject}
-                  onDuplicateProject={handleDuplicateProject}
-                />
-              ) : (
+          browseMode === "project" ? (
+            <section className="space-y-6">
+              <Dashboard projects={projects} tasks={tasks} />
+
+              <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+                <aside className="space-y-6">
+                  <ProjectTree
+                    projects={projects}
+                    tasks={tasks}
+                    selectedProjectId={selectedProject?.id ?? null}
+                    isDatabaseMode={isDatabaseMode}
+                    onDeleteProject={handleDeleteProject}
+                    onDuplicateProject={handleDuplicateProject}
+                  />
+                </aside>
+
+                <section className="space-y-6">
+                  <ProjectDetail
+                    selectedProject={selectedProject}
+                    projects={projects}
+                    tasks={tasks}
+                    filters={taskFilters}
+                    isDatabaseMode={isDatabaseMode}
+                    onFiltersChange={handleTaskFiltersChange}
+                    onEditTask={handleOpenEditTaskForm}
+                    onDeleteTask={handleDeleteTask}
+                    onOpenTask={openTaskDetail}
+                    onPatchTask={handlePatchTask}
+                    onDuplicateTask={handleDuplicateTask}
+                    onDuplicateProject={handleDuplicateProject}
+                  />
+                  <TodayFocus projects={projects} tasks={tasks} onOpenTask={openTaskDetail} />
+                </section>
+              </div>
+            </section>
+          ) : (
+            <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+              <aside className="space-y-6">
                 <AssigneeListPanel
                   tasks={tasks}
                   selectedAssignee={taskFilters.assignee}
@@ -483,33 +540,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     }))
                   }
                 />
-              )}
-            </aside>
+              </aside>
 
-            <section className="space-y-6">
-              {browseMode === "project" ? (
-                <>
-                  <Dashboard projects={projects} tasks={tasks} />
-                  <TodayFocus projects={projects} tasks={tasks} onOpenTask={openTaskDetail} />
-                  <ProjectDetail
-                    selectedProject={selectedProject}
-                    projects={projects}
-                    tasks={tasks}
-                    filters={taskFilters}
-                    isDatabaseMode={isDatabaseMode}
-                    onFiltersChange={handleTaskFiltersChange}
-                    onEditProject={handleOpenEditProjectForm}
-                    onCreateChild={handleOpenChildProjectForm}
-                    onCreateTask={handleOpenCreateTaskForm}
-                    onEditTask={handleOpenEditTaskForm}
-                    onDeleteTask={handleDeleteTask}
-                    onOpenTask={openTaskDetail}
-                    onPatchTask={handlePatchTask}
-                    onDuplicateTask={handleDuplicateTask}
-                    onDuplicateProject={handleDuplicateProject}
-                  />
-                </>
-              ) : (
+              <section className="space-y-6">
                 <AssigneeWorkspace
                   projects={projects}
                   tasks={tasks}
@@ -522,9 +555,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   onPatchTask={handlePatchTask}
                   onDuplicateTask={handleDuplicateTask}
                 />
-              )}
-            </section>
-          </div>
+              </section>
+            </div>
+          )
         ) : (
           <section className="space-y-6">
             <Card className="space-y-6">
@@ -536,7 +569,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   <div>
                     <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">상단 입력 영역</h2>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-                      프로젝트와 Task 입력을 한 곳에서만 전환하도록 정리했습니다. 아래 프로젝트 트리에서 대상을 선택한 뒤 여기서 바로 입력하세요.
+                      프로젝트와 Task 입력은 여기서만 시작합니다. 아래 프로젝트 트리에서 대상을 선택한 뒤 여기서 바로 입력하세요.
                     </p>
                   </div>
                 </div>
@@ -575,28 +608,26 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
                   {inputSection === "project" ? (
                     <>
+                      <select
+                        value={projectEntryMode}
+                        onChange={(event) => setProjectEntryMode(event.target.value as ProjectEntryMode)}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                      >
+                        <option value="create-root">루트 프로젝트 생성</option>
+                        <option value="create-child" disabled={!selectedProject}>
+                          선택 프로젝트 하위 추가
+                        </option>
+                        <option value="edit" disabled={!selectedProject}>
+                          선택 프로젝트 수정
+                        </option>
+                      </select>
                       <button
                         type="button"
-                        onClick={handleOpenRootProjectForm}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        onClick={handleStartProjectEntry}
+                        disabled={!selectedProject && projectEntryMode !== "create-root"}
+                        className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                       >
-                        루트 생성
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectedProject && handleOpenChildProjectForm(selectedProject.id)}
-                        disabled={!selectedProject}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                      >
-                        하위 추가
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectedProject && handleOpenEditProjectForm(selectedProject.id)}
-                        disabled={!selectedProject}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                      >
-                        프로젝트 수정
+                        프로젝트 입력 열기
                       </button>
                     </>
                   ) : (
@@ -605,7 +636,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                       onClick={handleStartTaskEntry}
                       className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                     >
-                      새 Task
+                      Task 입력 열기
                     </button>
                   )}
                 </div>
@@ -619,7 +650,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   </p>
                 </div>
                 <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">현재 프로젝트 Task</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">선택 범위 Task</p>
                   <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProjectTasks.length}</p>
                 </div>
                 <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
@@ -643,7 +674,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                           {projectFormState.mode === "create-child"
                             ? "선택한 프로젝트 아래에 새 하위 프로젝트를 추가합니다."
-                            : "프로젝트 기본 정보를 입력해 주세요."}
+                            : projectFormState.mode === "edit"
+                              ? "선택한 프로젝트 정보를 이곳에서 수정합니다."
+                              : "프로젝트 기본 정보를 입력해 주세요."}
                         </p>
                       </div>
                       <ProjectForm
@@ -660,7 +693,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     </div>
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                      상단의 작은 프로젝트 버튼을 눌러 여기서 하나의 프로젝트 입력 폼만 열어 주세요.
+                      상단에서 프로젝트 작업을 고른 뒤 `프로젝트 입력 열기` 버튼으로 여기서만 입력을 시작해 주세요.
                     </div>
                   )}
                 </div>
@@ -697,7 +730,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     </div>
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                      상단의 `새 Task` 버튼을 눌러 여기서 하나의 Task 입력 폼만 열어 주세요.
+                      상단의 `Task 입력 열기` 버튼을 눌러 여기서만 Task 입력 폼을 열어 주세요.
                     </div>
                   )}
                 </div>
@@ -706,11 +739,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
             <ProjectTree
               projects={projects}
+              tasks={tasks}
               selectedProjectId={selectedProject?.id ?? null}
               isDatabaseMode={isDatabaseMode}
-              onCreateRoot={handleOpenRootProjectForm}
-              onCreateChild={handleOpenChildProjectForm}
-              onEditProject={handleOpenEditProjectForm}
               onDeleteProject={handleDeleteProject}
               onDuplicateProject={handleDuplicateProject}
             />
