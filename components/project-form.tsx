@@ -54,6 +54,9 @@ export function ProjectForm({
         <label className="grid gap-2">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">상위 프로젝트</span>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            {parentProject ? `${parentProject.name} / 깊이 ${parentProject.depth + 1}` : "상위 프로젝트 없음"}
+          </div>
+          <div className="hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
             {parentProject ? `${parentProject.name} / 깊이 ${parentProject.depth + 1}` : "루트 프로젝트"}
           </div>
         </label>

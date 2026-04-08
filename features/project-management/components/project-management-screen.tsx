@@ -98,7 +98,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   useEffect(() => {
     if (projectFormState) {
       setInputSection("project");
-      setProjectEntryMode(projectFormState.mode);
       return;
     }
 
@@ -132,12 +131,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     () => tasks.find((task) => task.id === detailTaskId) ?? null,
     [detailTaskId, tasks],
   );
-
-  useEffect(() => {
-    if (!selectedProject && projectEntryMode !== "create-root") {
-      setProjectEntryMode("create-root");
-    }
-  }, [projectEntryMode, selectedProject]);
 
   const handleTaskFiltersChange = (nextFilters: SetStateAction<TaskFilters>) => {
     setTaskFilters(typeof nextFilters === "function" ? nextFilters(taskFilters) : nextFilters);
@@ -199,6 +192,24 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     }
 
     handleOpenCreateTaskForm(selectedProject.id);
+  };
+
+  const handleStartChildProjectEntry = () => {
+    if (!selectedProject) {
+      window.alert("?꾨줈?앺듃瑜?癒쇱? ?좏깮??二쇱꽭??");
+      return;
+    }
+
+    handleOpenChildProjectForm(selectedProject.id);
+  };
+
+  const handleStartProjectEdit = () => {
+    if (!selectedProject) {
+      window.alert("?꾨줈?앺듃瑜?癒쇱? ?좏깮??二쇱꽭??");
+      return;
+    }
+
+    handleOpenEditProjectForm(selectedProject.id);
   };
 
   const runServerMutation = (mutation: () => Promise<MutationResult>, onSuccess?: () => void) => {
@@ -399,7 +410,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                 ) : null}
               </div>
               <div className="space-y-2">
-                <h1 className="inline-flex rounded-[24px] bg-slate-950 px-5 py-3 text-3xl font-semibold tracking-tight text-white shadow-[0_18px_45px_rgba(15,23,42,0.18)] dark:bg-white/10 dark:text-slate-50 dark:shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
+                <h1 className="inline-flex rounded-[24px] border border-slate-300 bg-white/90 px-5 py-3 text-3xl font-semibold tracking-tight text-slate-950 shadow-[0_18px_45px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/10 dark:text-slate-50 dark:shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
                   프로젝트 관리 워크스페이스
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-200">
@@ -413,7 +424,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               <button
                 type="button"
                 onClick={() => downloadTasksCsv(projects, tasks, null)}
-                className="rounded-2xl border border-slate-300 bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:border-white/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                className="rounded-2xl border border-slate-300 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white dark:border-white/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
               >
                 전체 CSV 다운로드
               </button>
@@ -576,7 +587,37 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex flex-wrap gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleOpenRootProjectForm}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                    >
+                      프로젝트 입력
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleStartChildProjectEntry}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                    >
+                      하위 프로젝트 입력
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleStartTaskEntry}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                    >
+                      Task 입력
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleStartProjectEdit}
+                      className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    >
+                      수정
+                    </button>
+                  </div>
+                  <div className="hidden flex flex-wrap gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
                     <button
                       type="button"
                       onClick={() => {
@@ -607,7 +648,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     </button>
                   </div>
 
-                  {inputSection === "project" ? (
+                  <div className="hidden">{inputSection === "project" ? (
                     <>
                       <select
                         value={projectEntryMode}
@@ -639,7 +680,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     >
                       Task 입력 열기
                     </button>
-                  )}
+                  )}</div>
                 </div>
               </div>
 
@@ -669,6 +710,22 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                           {projectFormState.mode === "edit"
                             ? "프로젝트 수정"
                             : projectFormState.mode === "create-child"
+                              ? "하위 프로젝트 입력"
+                              : "프로젝트 입력"}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          {projectFormState.mode === "create-child"
+                            ? "선택한 프로젝트 아래에 하위 프로젝트를 입력합니다."
+                            : projectFormState.mode === "edit"
+                              ? "선택한 프로젝트 정보를 여기서 수정합니다."
+                              : "프로젝트 기본 정보를 바로 입력해 주세요."}
+                        </p>
+                      </div>
+                      <div className="hidden">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          {projectFormState.mode === "edit"
+                            ? "프로젝트 수정"
+                            : projectFormState.mode === "create-child"
                               ? "하위 프로젝트 생성"
                               : "루트 프로젝트 생성"}
                         </h3>
@@ -694,7 +751,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     </div>
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                      상단에서 프로젝트 작업을 고른 뒤 `프로젝트 입력 열기` 버튼으로 여기서만 입력을 시작해 주세요.
+                      상단의 `프로젝트 입력`, `하위 프로젝트 입력`, `수정` 버튼 중 하나를 눌러 바로 작업을 시작해 주세요.
                     </div>
                   )}
                 </div>
@@ -731,7 +788,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     </div>
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                      상단의 `Task 입력 열기` 버튼을 눌러 여기서만 Task 입력 폼을 열어 주세요.
+                      상단의 `Task 입력` 버튼을 눌러 바로 Task 입력 폼을 열어 주세요.
                     </div>
                   )}
                 </div>
