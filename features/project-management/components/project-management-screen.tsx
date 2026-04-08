@@ -408,28 +408,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     },
   };
 
-  const renderHeroArtwork = () => (
-    <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_12px_30px_rgba(71,85,105,0.10)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.10),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.10),transparent_34%)]" />
-      <svg viewBox="0 0 360 220" className="relative h-full w-full" role="img" aria-label="프로젝트 관리 보드 일러스트">
-        <rect x="20" y="20" width="108" height="156" rx="20" fill="#eff6ff" stroke="#bfdbfe" />
-        <rect x="42" y="44" width="62" height="10" rx="5" fill="#2563eb" />
-        <rect x="42" y="70" width="54" height="10" rx="5" fill="#93c5fd" />
-        <rect x="42" y="96" width="48" height="10" rx="5" fill="#cbd5e1" />
-        <rect x="42" y="122" width="56" height="10" rx="5" fill="#dbeafe" />
-        <circle cx="102" cy="150" r="12" fill="#60a5fa" />
-        <rect x="146" y="34" width="194" height="48" rx="18" fill="#fff7ed" stroke="#fdba74" />
-        <rect x="164" y="50" width="72" height="10" rx="5" fill="#ea580c" />
-        <rect x="164" y="66" width="132" height="8" rx="4" fill="#fdba74" />
-        <rect x="146" y="98" width="194" height="44" rx="18" fill="#ffffff" stroke="#dbe2ec" />
-        <rect x="164" y="114" width="80" height="10" rx="5" fill="#0f172a" opacity="0.9" />
-        <rect x="256" y="112" width="58" height="14" rx="7" fill="#dcfce7" />
-        <rect x="146" y="158" width="194" height="38" rx="18" fill="#f8fafc" stroke="#dbe2ec" />
-        <rect x="164" y="173" width="120" height="8" rx="4" fill="#cbd5e1" />
-      </svg>
-    </div>
-  );
-
   const renderInputWorkspace = () => (
     <section className="space-y-5">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
@@ -526,7 +504,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           )}
         </Card>
 
-        <div className="xl:w-[440px] xl:flex-none">
+        <div className="xl:w-[380px] xl:flex-none">
           <ProjectTree
             projects={projects}
             tasks={tasks}
@@ -596,8 +574,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "assignee") {
       return (
-        <section className="flex flex-col gap-5 xl:flex-row xl:items-start">
-          <aside className="xl:w-[250px] xl:flex-none">
+        <section className="flex flex-col gap-4 xl:flex-row xl:items-start">
+          <aside className="xl:w-[220px] xl:flex-none">
             <AssigneeListPanel
               tasks={tasks}
               selectedAssignee={taskFilters.assignee}
@@ -646,10 +624,10 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.14),transparent_30%),linear-gradient(180deg,#f7f4ec_0%,#eef4fb_100%)] px-4 py-6 text-slate-900 md:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1880px] space-y-6">
-        <section className="overflow-hidden rounded-[34px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,252,245,0.96)_0%,rgba(244,248,255,0.96)_55%,rgba(233,244,255,0.98)_100%)] px-6 py-6 shadow-[0_24px_70px_rgba(71,85,105,0.12)]">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.10),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] px-4 py-6 text-slate-900 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-[2000px] space-y-5">
+        <section className="overflow-hidden rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.97)_0%,rgba(243,248,255,0.97)_100%)] px-6 py-5 shadow-[0_18px_48px_rgba(71,85,105,0.08)]">
+          <div className="flex flex-col gap-4">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-900">
@@ -683,13 +661,12 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               </div>
             </div>
 
-            <div className="w-full xl:max-w-[320px]">{renderHeroArtwork()}</div>
           </div>
         </section>
 
-        <div className="rounded-[28px] border border-white/70 bg-white/94 px-5 py-5 shadow-[0_16px_40px_rgba(71,85,105,0.08)]">
+        <div className="rounded-[24px] border border-white/70 bg-white/94 px-5 py-4 shadow-[0_14px_32px_rgba(71,85,105,0.07)]">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="space-y-1">
+            <div className="min-w-0 flex-1 space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Current Project</p>
               <h2 className="text-2xl font-semibold text-slate-950">{selectedProject?.name ?? "선택된 프로젝트 없음"}</h2>
               <p className="text-sm text-slate-500">
@@ -697,33 +674,33 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
-              <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
+            <div className="grid gap-2 sm:grid-cols-3 xl:w-[460px] xl:flex-none">
+              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">선택 범위 Task</p>
-                <p className="mt-2 text-3xl font-semibold text-slate-900">{selectedProjectTasks.length}</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-900">{selectedProjectTasks.length}</p>
               </div>
-              <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">미완료</p>
-                <p className="mt-2 text-3xl font-semibold text-slate-900">{selectedProjectOpenTasks}</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-900">{selectedProjectOpenTasks}</p>
               </div>
-              <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">현재 화면</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{sectionMeta[activeSection].title}</p>
+                <p className="mt-1 text-base font-semibold text-slate-900">{sectionMeta[activeSection].title}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
-          <aside className="xl:sticky xl:top-6 xl:w-[248px] xl:flex-none">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+          <aside className="xl:sticky xl:top-6 xl:w-[220px] xl:flex-none">
             <Card className="overflow-hidden border-amber-100 bg-white/95 p-0">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#fffaf0_0%,#f5f9ff_100%)] px-5 py-5">
+              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#fffaf0_0%,#f5f9ff_100%)] px-4 py-4">
                 <p className="text-xs font-semibold tracking-[0.18em] text-slate-500">NAVIGATION</p>
                 <h2 className="mt-2 text-xl font-semibold text-slate-900">프로젝트 컨트롤</h2>
                 <p className="mt-1 text-sm text-slate-500">왼쪽 메뉴를 누르면 오른쪽에 해당 내용만 표시됩니다.</p>
               </div>
 
-              <div className="space-y-2 px-4 py-4">
+              <div className="space-y-2 px-3 py-3">
                 {sidebarItems.map((item) => {
                   const isActive = activeSection === item.id;
 
@@ -733,7 +710,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                       type="button"
                       onClick={() => setActiveSection(item.id)}
                       className={cn(
-                        "w-full rounded-[18px] border px-4 py-3 text-left transition",
+                        "w-full rounded-[16px] border px-3 py-3 text-left transition",
                         isActive
                           ? "border-sky-200 bg-sky-50 text-sky-700 shadow-[0_10px_22px_rgba(14,165,233,0.08)]"
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
@@ -748,10 +725,10 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
             </Card>
           </aside>
 
-          <section className="min-w-0 space-y-5 xl:flex-1">
-            <div className="rounded-[28px] border border-white/70 bg-white/94 px-6 py-5 shadow-[0_16px_40px_rgba(71,85,105,0.08)]">
+          <section className="min-w-0 space-y-4 xl:flex-1">
+            <div className="rounded-[24px] border border-white/70 bg-white/94 px-5 py-4 shadow-[0_14px_32px_rgba(71,85,105,0.07)]">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ACTIVE VIEW</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{sectionMeta[activeSection].title}</h2>
+              <h2 className="mt-2 text-[30px] font-semibold tracking-tight text-slate-950">{sectionMeta[activeSection].title}</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">{sectionMeta[activeSection].description}</p>
             </div>
 
