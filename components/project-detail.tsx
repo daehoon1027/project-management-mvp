@@ -40,11 +40,6 @@ export function ProjectDetail({
   onDuplicateTask,
   onDuplicateProject,
 }: ProjectDetailProps) {
-  const breadcrumb = useMemo(
-    () => (selectedProject ? getProjectPath(projects, selectedProject.id) : []),
-    [projects, selectedProject],
-  );
-
   const relatedProjectIds = useMemo(() => {
     if (!selectedProject) {
       return [];
@@ -102,15 +97,6 @@ export function ProjectDetail({
         <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-6 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                {breadcrumb.map((project, index) => (
-                  <span key={project.id} className="flex items-center gap-2">
-                    <span>{project.name}</span>
-                    {index < breadcrumb.length - 1 ? <span>/</span> : null}
-                  </span>
-                ))}
-              </div>
-
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProject.name}</h2>
