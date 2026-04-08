@@ -11,7 +11,6 @@ import { ProjectTree } from "@/components/project-tree";
 import { SystemFoundationPanel } from "@/components/system-foundation-panel";
 import { TaskDetailDrawer } from "@/components/task-detail-drawer";
 import { TaskForm } from "@/components/task-form";
-import { TodayFocus } from "@/components/today-focus";
 import { Card } from "@/components/ui/card";
 import { useMounted } from "@/hooks/use-mounted";
 import { createProjectAction, deleteProjectAction, updateProjectAction } from "@/features/project-management/server/actions/project-actions";
@@ -19,7 +18,6 @@ import { addCommentAction, createTaskAction, deleteTaskAction, updateTaskAction 
 import type { ProjectManagementPageData } from "@/features/project-management/server/dto/project-management.dto";
 import { useProjectManagementUiStore } from "@/features/project-management/store/use-project-management-ui-store";
 import { downloadTasksCsv } from "@/lib/export";
-import { getDescendantProjectIds } from "@/lib/project-tree";
 import { cn } from "@/lib/utils";
 import { useProjectStore } from "@/store/use-project-store";
 import type { ProjectInput, TaskFilters, TaskInput, TaskPatch } from "@/types";
@@ -33,7 +31,7 @@ type MutationResult = {
   message?: string;
 };
 
-type WorkspaceSection = "input" | "project-map" | "project-tasks" | "dashboard" | "assignee" | "system";
+type WorkspaceSection = "input" | "project-map" | "project-tasks" | "assignee" | "system";
 type InputSection = "project" | "task";
 
 export function ProjectManagementScreen({ pageData }: ProjectManagementScreenProps) {
@@ -106,15 +104,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   }, [projectFormState, taskFormState]);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? projects[0] ?? null;
-  const selectedProjectScopeIds = useMemo(
-    () => (selectedProject ? [selectedProject.id, ...getDescendantProjectIds(projects, selectedProject.id)] : []),
-    [projects, selectedProject],
-  );
-  const selectedProjectTasks = useMemo(
-    () => (selectedProject ? tasks.filter((task) => selectedProjectScopeIds.includes(task.projectId)) : []),
-    [selectedProject, selectedProjectScopeIds, tasks],
-  );
-  const selectedProjectOpenTasks = selectedProjectTasks.filter((task) => !task.isCompleted).length;
 
   const editingProject =
     projectFormState?.mode === "edit"
@@ -376,7 +365,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     { id: "input", label: "입력 워크스페이스", description: "프로젝트와 Task 입력" },
     { id: "project-map", label: "프로젝트 맵", description: "계층과 연결 Task 탐색" },
     { id: "project-tasks", label: "프로젝트 Task", description: "선택 프로젝트 Task 조회" },
-    { id: "dashboard", label: "경영 대시보드", description: "KPI와 오늘의 실행 현황" },
     { id: "assignee", label: "담당자 기준", description: "담당자별 실행 현황" },
     { id: "system", label: "시스템 현황", description: "사용자, 부서, 알림 현황" },
   ];
@@ -394,10 +382,6 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
       title: "프로젝트 Task",
       description: "선택한 프로젝트 범위의 Task만 밀도 있게 모아서 봅니다.",
     },
-    dashboard: {
-      title: "경영 대시보드",
-      description: "숫자와 우선순위를 한 눈에 보도록 요약한 운영 화면입니다.",
-    },
     assignee: {
       title: "담당자 기준",
       description: "담당자별로 업무량과 진행 상태를 빠르게 확인합니다.",
@@ -410,8 +394,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
   const renderInputWorkspace = () => (
     <section className="space-y-5">
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
-        <Card className="space-y-5 border-amber-100 bg-white xl:min-w-0 xl:flex-1">
+      <Card className="space-y-5 border-amber-100 bg-white">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-2">
               <span className="inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-amber-700">
@@ -502,32 +485,11 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
               )}
             </div>
           )}
-        </Card>
-
-        <div className="xl:w-[380px] xl:flex-none">
-          <ProjectTree
-            projects={projects}
-            tasks={tasks}
-            selectedProjectId={selectedProject?.id ?? null}
-            isDatabaseMode={isDatabaseMode}
-            onDeleteProject={handleDeleteProject}
-            onDuplicateProject={handleDuplicateProject}
-          />
-        </div>
-      </div>
+      </Card>
     </section>
   );
 
   const renderActiveSection = () => {
-    if (activeSection === "dashboard") {
-      return (
-        <section className="space-y-5">
-          <Dashboard projects={projects} tasks={tasks} />
-          <TodayFocus projects={projects} tasks={tasks} onOpenTask={openTaskDetail} />
-        </section>
-      );
-    }
-
     if (activeSection === "project-map") {
       return (
         <section className="space-y-5">
@@ -664,32 +626,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           </div>
         </section>
 
-        <div className="rounded-[24px] border border-white/70 bg-white/94 px-5 py-4 shadow-[0_14px_32px_rgba(71,85,105,0.07)]">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Current Project</p>
-              <h2 className="text-2xl font-semibold text-slate-950">{selectedProject?.name ?? "선택된 프로젝트 없음"}</h2>
-              <p className="text-sm text-slate-500">
-                {selectedProject ? "왼쪽 메뉴를 바꿔도 현재 선택 프로젝트 기준은 유지됩니다." : "프로젝트 맵에서 프로젝트를 선택하면 모든 조회 화면이 같은 기준으로 연결됩니다."}
-              </p>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-3 xl:w-[460px] xl:flex-none">
-              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">선택 범위 Task</p>
-                <p className="mt-1 text-2xl font-semibold text-slate-900">{selectedProjectTasks.length}</p>
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">미완료</p>
-                <p className="mt-1 text-2xl font-semibold text-slate-900">{selectedProjectOpenTasks}</p>
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">현재 화면</p>
-                <p className="mt-1 text-base font-semibold text-slate-900">{sectionMeta[activeSection].title}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Dashboard projects={projects} tasks={tasks} />
 
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
           <aside className="xl:sticky xl:top-6 xl:w-[220px] xl:flex-none">
