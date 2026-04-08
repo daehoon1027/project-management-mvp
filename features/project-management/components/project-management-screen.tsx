@@ -11,11 +11,9 @@ import { ProjectTree } from "@/components/project-tree";
 import { SystemFoundationPanel } from "@/components/system-foundation-panel";
 import { TaskDetailDrawer } from "@/components/task-detail-drawer";
 import { TaskForm } from "@/components/task-form";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { TodayFocus } from "@/components/today-focus";
 import { Card } from "@/components/ui/card";
 import { useMounted } from "@/hooks/use-mounted";
-import { useTheme } from "@/hooks/use-theme";
 import { createProjectAction, deleteProjectAction, updateProjectAction } from "@/features/project-management/server/actions/project-actions";
 import { addCommentAction, createTaskAction, deleteTaskAction, updateTaskAction } from "@/features/project-management/server/actions/task-actions";
 import type { ProjectManagementPageData } from "@/features/project-management/server/dto/project-management.dto";
@@ -42,10 +40,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   const mounted = useMounted();
   const router = useRouter();
   const [isMutating, startTransition] = useTransition();
-  const [activeSection, setActiveSection] = useState<WorkspaceSection>("dashboard");
+  const [activeSection, setActiveSection] = useState<WorkspaceSection>("project-map");
   const [inputSection, setInputSection] = useState<InputSection>("project");
   const isDatabaseMode = pageData.source === "database";
-  const { isDarkMode, toggleTheme } = useTheme();
   const syncWorkspaceData = useProjectStore((state) => state.syncWorkspaceData);
 
   const projectFormState = useProjectManagementUiStore((state) => state.projectFormState);
@@ -85,6 +82,11 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
       syncWorkspaceData(pageData.snapshot);
     }
   }, [pageData.snapshot, pageData.source, syncWorkspaceData]);
+
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    window.localStorage.removeItem("project-management-theme");
+  }, []);
 
   useEffect(() => {
     if (projectFormState || taskFormState) {
@@ -370,124 +372,119 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     }
   };
 
-  const sidebarGroups: Array<{
-    title: string;
-    items: Array<{
-      id: WorkspaceSection;
-      label: string;
-      description: string;
-    }>;
-  }> = [
-    {
-      title: "분석",
-      items: [
-        { id: "dashboard", label: "경영 대시보드", description: "KPI와 오늘의 실행 현황" },
-        { id: "project-map", label: "프로젝트 맵", description: "루트 프로젝트 중심으로 탐색" },
-        { id: "project-tasks", label: "프로젝트 Task", description: "선택 프로젝트의 Task만 조회" },
-        { id: "assignee", label: "담당자 기준", description: "담당자별 실행 현황" },
-      ],
-    },
-    {
-      title: "입력",
-      items: [{ id: "input", label: "입력 워크스페이스", description: "프로젝트와 Task 입력" }],
-    },
-    {
-      title: "관리",
-      items: [{ id: "system", label: "시스템 현황", description: "사용자, 부서, 알림 현황" }],
-    },
+  const sidebarItems: Array<{ id: WorkspaceSection; label: string; description: string }> = [
+    { id: "input", label: "입력 워크스페이스", description: "프로젝트와 Task 입력" },
+    { id: "project-map", label: "프로젝트 맵", description: "계층과 연결 Task 탐색" },
+    { id: "project-tasks", label: "프로젝트 Task", description: "선택 프로젝트 Task 조회" },
+    { id: "dashboard", label: "경영 대시보드", description: "KPI와 오늘의 실행 현황" },
+    { id: "assignee", label: "담당자 기준", description: "담당자별 실행 현황" },
+    { id: "system", label: "시스템 현황", description: "사용자, 부서, 알림 현황" },
   ];
 
   const sectionMeta: Record<WorkspaceSection, { title: string; description: string }> = {
     dashboard: {
       title: "경영 대시보드",
-      description: "전체 KPI와 오늘 바로 확인해야 할 실행 항목을 한곳에서 봅니다.",
+      description: "숫자와 우선순위를 한 눈에 보도록 요약한 운영 화면입니다.",
     },
     "project-map": {
       title: "프로젝트 맵",
-      description: "한 주제씩 집중해서 보고, 필요한 계층과 연결 Task만 펼쳐서 확인합니다.",
+      description: "루트 프로젝트부터 펼쳐 보며 하위 구조와 연결 Task를 바로 확인합니다.",
     },
     "project-tasks": {
       title: "프로젝트 Task",
-      description: "선택한 프로젝트와 하위 프로젝트에 연결된 Task만 모아서 봅니다.",
+      description: "선택한 프로젝트 범위의 Task만 밀도 있게 모아서 봅니다.",
     },
     assignee: {
-      title: "담당자 기준 조회",
-      description: "담당자 단위로 업무량과 상태를 빠르게 확인합니다.",
+      title: "담당자 기준",
+      description: "담당자별로 업무량과 진행 상태를 빠르게 확인합니다.",
     },
     input: {
       title: "입력 워크스페이스",
-      description: "입력은 여기 한 곳에서만 시작하고, 다른 화면과 명확히 분리합니다.",
+      description: "입력은 이 한 화면에서만 시작하고, 프로젝트 선택은 오른쪽 맵과 연결됩니다.",
     },
     system: {
       title: "시스템 현황",
-      description: "사용자, 부서, 알림 기반 운영 정보를 점검합니다.",
+      description: "사용자, 부서, 알림 같은 운영 기반 데이터를 확인합니다.",
     },
   };
 
+  const renderHeroArtwork = () => (
+    <div className="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/75 p-5 shadow-[0_18px_45px_rgba(66,45,12,0.12)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.18),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.14),transparent_40%)]" />
+      <svg viewBox="0 0 420 260" className="relative h-full w-full" role="img" aria-label="프로젝트 관리 보드 일러스트">
+        <rect x="18" y="24" width="160" height="78" rx="18" fill="#ffffff" stroke="#d6ddeb" />
+        <rect x="28" y="38" width="72" height="12" rx="6" fill="#1d4ed8" opacity="0.92" />
+        <rect x="28" y="60" width="124" height="10" rx="5" fill="#cbd5e1" />
+        <rect x="28" y="78" width="96" height="10" rx="5" fill="#dbeafe" />
+        <rect x="196" y="24" width="206" height="102" rx="22" fill="#fff7ed" stroke="#f6c78b" />
+        <rect x="216" y="44" width="88" height="13" rx="6.5" fill="#d97706" />
+        <rect x="216" y="68" width="166" height="12" rx="6" fill="#fed7aa" />
+        <rect x="216" y="90" width="134" height="12" rx="6" fill="#fdba74" />
+        <rect x="18" y="126" width="236" height="112" rx="24" fill="#eff6ff" stroke="#bfd5ff" />
+        <rect x="34" y="148" width="66" height="12" rx="6" fill="#2563eb" opacity="0.9" />
+        <rect x="34" y="174" width="196" height="12" rx="6" fill="#bfdbfe" />
+        <rect x="34" y="194" width="176" height="12" rx="6" fill="#dbeafe" />
+        <rect x="34" y="214" width="122" height="10" rx="5" fill="#93c5fd" />
+        <rect x="274" y="146" width="128" height="92" rx="24" fill="#f0fdf4" stroke="#b7e4c4" />
+        <rect x="294" y="166" width="62" height="12" rx="6" fill="#16a34a" />
+        <rect x="294" y="190" width="84" height="10" rx="5" fill="#bbf7d0" />
+        <rect x="294" y="208" width="62" height="10" rx="5" fill="#86efac" />
+        <circle cx="146" cy="164" r="9" fill="#2563eb" />
+        <circle cx="172" cy="164" r="9" fill="#60a5fa" />
+        <circle cx="198" cy="164" r="9" fill="#93c5fd" />
+      </svg>
+    </div>
+  );
+
   const renderInputWorkspace = () => (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <Card className="space-y-6 lg:min-w-0 lg:flex-1">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+    <section className="space-y-5">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
+        <Card className="space-y-5 border-amber-100 bg-white xl:min-w-0 xl:flex-1">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span className="inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-amber-700">
                 INPUT WORKSPACE
               </span>
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">상단 입력 영역</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">입력 워크스페이스</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
                   프로젝트와 Task 입력은 여기에서만 시작합니다. 오른쪽 프로젝트 맵에서 대상을 선택한 뒤 바로 입력해 주세요.
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={handleOpenRootProjectForm} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
+              <button type="button" onClick={handleOpenRootProjectForm} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
                 프로젝트 입력
               </button>
-              <button type="button" onClick={handleStartChildProjectEntry} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
+              <button type="button" onClick={handleStartChildProjectEntry} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
                 하위 프로젝트 입력
               </button>
-              <button type="button" onClick={handleStartTaskEntry} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
+              <button type="button" onClick={handleStartTaskEntry} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
                 Task 입력
               </button>
-              <button type="button" onClick={handleStartProjectEdit} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
+              <button type="button" onClick={handleStartProjectEdit} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
                 수정
               </button>
-              <button type="button" onClick={handleStartProjectDelete} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:text-rose-300 dark:hover:bg-rose-950/30">
+              <button type="button" onClick={handleStartProjectDelete} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100">
                 프로젝트 삭제
               </button>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[26px] border border-slate-200/90 bg-gradient-to-b from-white to-slate-50 p-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
-              <p className="text-sm text-slate-500 dark:text-slate-400">현재 선택 프로젝트</p>
-              <p className="mt-2 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProject?.name ?? "선택된 프로젝트 없음"}</p>
-            </div>
-            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-              <p className="text-sm text-slate-500 dark:text-slate-400">선택 범위 Task</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProjectTasks.length}</p>
-            </div>
-            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-              <p className="text-sm text-slate-500 dark:text-slate-400">미완료 Task</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProjectOpenTasks}</p>
-            </div>
-          </div>
-
           {inputSection === "project" ? (
-            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5">
               {projectFormState ? (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-slate-900">
                       {projectFormState.mode === "edit" ? "프로젝트 수정" : projectFormState.mode === "create-child" ? "하위 프로젝트 입력" : "프로젝트 입력"}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-sm text-slate-500">
                       {projectFormState.mode === "create-child"
                         ? "선택한 프로젝트 아래에 하위 프로젝트를 입력합니다."
                         : projectFormState.mode === "edit"
-                          ? "선택한 프로젝트 정보를 여기에서 바로 수정합니다."
+                          ? "선택한 프로젝트 정보를 여기에서 수정합니다."
                           : "새 루트 프로젝트의 기본 정보를 입력해 주세요."}
                     </p>
                   </div>
@@ -500,22 +497,22 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   />
                 </div>
               ) : (
-                <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+                <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
                   위의 프로젝트 입력, 하위 프로젝트 입력, 수정 버튼 중 하나를 눌러 바로 시작해 주세요.
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            <div className="rounded-[26px] border border-slate-200/90 bg-white p-5">
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
                 대상 프로젝트
-                <p className="mt-1 font-semibold text-slate-900 dark:text-white">{selectedProject?.name ?? "먼저 프로젝트 맵에서 프로젝트를 선택해 주세요."}</p>
+                <p className="mt-1 font-semibold text-slate-900">{selectedProject?.name ?? "먼저 프로젝트 맵에서 프로젝트를 선택해 주세요."}</p>
               </div>
               {taskFormState ? (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{taskFormState.mode === "edit" ? "Task 수정" : "Task 생성"}</h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">일정, 우선순위, 상태, 메모까지 한 번에 입력할 수 있습니다.</p>
+                    <h3 className="text-lg font-semibold text-slate-900">{taskFormState.mode === "edit" ? "Task 수정" : "Task 생성"}</h3>
+                    <p className="mt-1 text-sm text-slate-500">일정, 우선순위, 상태, 메모까지 한 번에 입력할 수 있습니다.</p>
                   </div>
                   <TaskForm
                     mode={taskFormState.mode === "edit" ? "edit" : "create"}
@@ -527,7 +524,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                   />
                 </div>
               ) : (
-                <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+                <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
                   위의 Task 입력 버튼을 눌러 바로 Task 입력을 시작해 주세요.
                 </div>
               )}
@@ -535,7 +532,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
           )}
         </Card>
 
-        <div className="lg:w-[340px] lg:flex-none">
+        <div className="xl:w-[420px] xl:flex-none">
           <ProjectTree
             projects={projects}
             tasks={tasks}
@@ -552,7 +549,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   const renderActiveSection = () => {
     if (activeSection === "dashboard") {
       return (
-        <section className="space-y-6">
+        <section className="space-y-5">
           <Dashboard projects={projects} tasks={tasks} />
           <TodayFocus projects={projects} tasks={tasks} onOpenTask={openTaskDetail} />
         </section>
@@ -561,18 +558,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "project-map") {
       return (
-        <section className="space-y-6">
-          <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">현재 선택 프로젝트</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{selectedProject?.name ?? "선택된 프로젝트 없음"}</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">프로젝트 맵에서 카드를 누르면 선택 프로젝트가 바뀌고, 다른 화면도 같은 기준으로 이어집니다.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              선택 범위 Task {selectedProjectTasks.length}개
-            </div>
-          </Card>
-
+        <section className="space-y-5">
           <ProjectTree
             projects={projects}
             tasks={tasks}
@@ -587,22 +573,16 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "project-tasks") {
       return (
-        <section className="space-y-6">
-          <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">Task 기준 프로젝트</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{selectedProject?.name ?? "선택된 프로젝트 없음"}</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">프로젝트를 바꾸고 싶으면 프로젝트 맵에서 다른 프로젝트를 선택해 주세요.</p>
-            </div>
+        <section className="space-y-5">
+          <div className="flex justify-end">
             <button
               type="button"
               onClick={() => setActiveSection("project-map")}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               프로젝트 맵 보기
             </button>
-          </Card>
-
+          </div>
           <ProjectDetail
             selectedProject={selectedProject}
             projects={projects}
@@ -622,8 +602,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "assignee") {
       return (
-        <section className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <aside className="space-y-6 lg:w-[280px] lg:flex-none">
+        <section className="flex flex-col gap-5 xl:flex-row xl:items-start">
+          <aside className="xl:w-[250px] xl:flex-none">
             <AssigneeListPanel
               tasks={tasks}
               selectedAssignee={taskFilters.assignee}
@@ -636,7 +616,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
             />
           </aside>
 
-          <section className="min-w-0 space-y-6 lg:flex-1">
+          <section className="min-w-0 xl:flex-1">
             <AssigneeWorkspace
               projects={projects}
               tasks={tasks}
@@ -664,7 +644,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   if (!mounted) {
     return (
       <main className="min-h-screen px-6 py-10">
-        <div className="mx-auto flex max-w-7xl items-center justify-center rounded-[32px] border border-white/10 bg-slate-950/70 p-12 text-slate-50 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-center rounded-[32px] border border-amber-100 bg-white p-12 text-slate-700">
           데이터를 불러오는 중입니다...
         </div>
       </main>
@@ -672,123 +652,113 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   }
 
   return (
-    <main className="min-h-screen px-4 py-6 text-slate-900 md:px-6 lg:px-8 dark:text-slate-100">
-      <div className="mx-auto max-w-[1600px] space-y-6">
-        <section className="overflow-hidden rounded-[34px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#e2efff_45%,#d8ecff_100%)] px-6 py-8 text-slate-950 shadow-[0_25px_60px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-[linear-gradient(135deg,#0f172a_0%,#172554_45%,#1d4ed8_100%)] dark:text-white dark:shadow-[0_25px_60px_rgba(15,23,42,0.34)]">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.14),transparent_30%),linear-gradient(180deg,#f7f4ec_0%,#eef4fb_100%)] px-4 py-6 text-slate-900 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1880px] space-y-6">
+        <section className="overflow-hidden rounded-[38px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,252,245,0.96)_0%,rgba(244,248,255,0.96)_55%,rgba(233,244,255,0.98)_100%)] px-6 py-7 shadow-[0_30px_80px_rgba(71,85,105,0.14)]">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,_1.2fr)_400px] xl:items-center">
+            <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-900 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
+                <span className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold tracking-[0.14em] text-slate-900">
                   PROJECT OPERATIONS
                 </span>
-                <span className="inline-flex rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-900 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
+                <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
                   {isDatabaseMode ? "POSTGRESQL CONNECTED" : "SAMPLE DATA MODE"}
                 </span>
                 {isMutating ? (
-                  <span className="inline-flex rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-900 dark:border-white/20 dark:bg-slate-950/35 dark:text-slate-50">
+                  <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
                     SAVING...
                   </span>
                 ) : null}
               </div>
-              <div className="space-y-2">
-                <h1 className="inline-flex rounded-[24px] border border-slate-300 bg-white px-5 py-3 text-3xl font-semibold tracking-tight text-slate-950 shadow-[0_18px_45px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/10 dark:text-slate-50 dark:shadow-[0_6px_18px_rgba(15,23,42,0.45)]">
-                  프로젝트 관리 워크스페이스
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-200">
-                  왼쪽 바에서 필요한 주제만 눌러 보고, 오른쪽에서는 그 내용에만 집중하도록 화면을 나눴습니다.
+
+              <div className="space-y-3">
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 md:text-[44px]">프로젝트 관리 워크스페이스</h1>
+                <p className="max-w-3xl text-base leading-7 text-slate-600">
+                  입력, 조회, 담당자 기준 화면을 분리하고 현재 선택 프로젝트를 상단에 고정해서, 스크롤 부담 없이 프로젝트 흐름을 읽기 쉽게 정리했습니다.
                 </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => downloadTasksCsv(projects, tasks, null)}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
+                >
+                  전체 CSV 다운로드
+                </button>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => downloadTasksCsv(projects, tasks, null)}
-                className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 dark:border-white/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-              >
-                전체 CSV 다운로드
-              </button>
-              <ThemeToggle isDarkMode={isDarkMode} onToggle={toggleTheme} />
-            </div>
+            {renderHeroArtwork()}
           </div>
         </section>
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <aside className="space-y-4 lg:sticky lg:top-6 lg:w-[300px] lg:flex-none">
-            <Card className="overflow-hidden p-0">
-              <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
-                <p className="text-xs font-semibold tracking-[0.18em] text-slate-500 dark:text-slate-400">NAVIGATION</p>
-                <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">프로젝트 컨트롤</h2>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  왼쪽 메뉴를 누르면 해당 내용만 오른쪽에 표시됩니다.
-                </p>
+        <Card className="border-amber-100 bg-white/92">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Current Project</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">{selectedProject?.name ?? "선택된 프로젝트 없음"}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {selectedProject ? "왼쪽 메뉴를 바꿔도 현재 선택 프로젝트 기준이 유지됩니다." : "프로젝트 맵에서 프로젝트를 선택하면 모든 조회 화면이 같은 기준으로 연결됩니다."}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
+              <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">선택 범위 Task</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-900">{selectedProjectTasks.length}</p>
+              </div>
+              <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">미완료</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-900">{selectedProjectOpenTasks}</p>
+              </div>
+              <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">현재 화면</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">{sectionMeta[activeSection].title}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+          <aside className="xl:sticky xl:top-6 xl:w-[272px] xl:flex-none">
+            <Card className="overflow-hidden border-amber-100 bg-white/95 p-0">
+              <div className="border-b border-slate-200/90 bg-[linear-gradient(135deg,#fffaf0_0%,#f5f9ff_100%)] px-5 py-5">
+                <p className="text-xs font-semibold tracking-[0.18em] text-slate-500">NAVIGATION</p>
+                <h2 className="mt-2 text-xl font-semibold text-slate-900">프로젝트 컨트롤</h2>
+                <p className="mt-1 text-sm text-slate-500">왼쪽 메뉴를 누르면 오른쪽에 해당 내용만 표시됩니다.</p>
               </div>
 
-              <div className="space-y-5 px-4 py-4">
-                {sidebarGroups.map((group) => (
-                  <div key={group.title} className="space-y-2">
-                    <p className="px-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-                      {group.title}
-                    </p>
-                    <div className="space-y-1">
-                      {group.items.map((item) => {
-                        const isActive = activeSection === item.id;
+              <div className="space-y-2 px-4 py-4">
+                {sidebarItems.map((item) => {
+                  const isActive = activeSection === item.id;
 
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => setActiveSection(item.id)}
-                            className={cn(
-                              "w-full rounded-[20px] border px-4 py-3 text-left transition",
-                              isActive
-                                ? "border-brand-200 bg-brand-50 text-brand-700 shadow-sm dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300"
-                                : "border-transparent bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-800 dark:hover:bg-slate-900",
-                            )}
-                          >
-                            <p className="text-sm font-semibold">{item.label}</p>
-                            <p className={cn("mt-1 text-xs", isActive ? "text-brand-600 dark:text-brand-300" : "text-slate-400 dark:text-slate-500")}>
-                              {item.description}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card className="space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">현재 선택 프로젝트</p>
-                <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
-                  {selectedProject?.name ?? "선택된 프로젝트 없음"}
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">선택 범위 Task</p>
-                  <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{selectedProjectTasks.length}</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">미완료</p>
-                  <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{selectedProjectOpenTasks}</p>
-                </div>
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveSection(item.id)}
+                      className={cn(
+                        "w-full rounded-[20px] border px-4 py-4 text-left transition",
+                        isActive
+                          ? "border-sky-200 bg-sky-50 text-sky-700 shadow-[0_10px_25px_rgba(14,165,233,0.08)]"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+                      )}
+                    >
+                      <p className="text-sm font-semibold">{item.label}</p>
+                      <p className={cn("mt-1 text-xs", isActive ? "text-sky-600" : "text-slate-400")}>{item.description}</p>
+                    </button>
+                  );
+                })}
               </div>
             </Card>
           </aside>
 
-          <section className="min-w-0 space-y-6 lg:flex-1">
-            <Card className="border border-slate-200/80 bg-white/95 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-[0_20px_60px_rgba(2,6,23,0.45)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">ACTIVE VIEW</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                {sectionMeta[activeSection].title}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                {sectionMeta[activeSection].description}
-              </p>
-            </Card>
+          <section className="min-w-0 space-y-5 xl:flex-1">
+            <div className="rounded-[30px] border border-white/60 bg-white/92 px-6 py-5 shadow-[0_20px_55px_rgba(71,85,105,0.10)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ACTIVE VIEW</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{sectionMeta[activeSection].title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">{sectionMeta[activeSection].description}</p>
+            </div>
 
             {renderActiveSection()}
           </section>
