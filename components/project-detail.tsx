@@ -4,7 +4,6 @@ import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { TaskWorkspacePanel } from "@/components/task-workspace-panel";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { downloadTasksCsv } from "@/lib/export";
 import { getDescendantProjectIds, getProjectPath } from "@/lib/project-tree";
 import { filterTasks, sortTasks } from "@/lib/utils";
 import type { Project, Task, TaskFilters, TaskPatch } from "@/types";
@@ -16,13 +15,11 @@ type ProjectDetailProps = {
   filters: TaskFilters;
   isDatabaseMode?: boolean;
   onFiltersChange: Dispatch<SetStateAction<TaskFilters>>;
-  onDeleteProject: (projectId: string) => void;
   onEditTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
   onOpenTask: (taskId: string) => void;
   onPatchTask: (taskId: string, patch: TaskPatch) => void;
   onDuplicateTask: (taskId: string) => void;
-  onDuplicateProject: (projectId: string) => void;
 };
 
 export function ProjectDetail({
@@ -32,13 +29,11 @@ export function ProjectDetail({
   filters,
   isDatabaseMode = false,
   onFiltersChange,
-  onDeleteProject,
   onEditTask,
   onDeleteTask,
   onOpenTask,
   onPatchTask,
   onDuplicateTask,
-  onDuplicateProject,
 }: ProjectDetailProps) {
   const relatedProjectIds = useMemo(() => {
     if (!selectedProject) {
@@ -94,53 +89,6 @@ export function ProjectDetail({
   return (
     <section className="space-y-6">
       <Card className="overflow-hidden p-0">
-        <div className="border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-6 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{selectedProject.name}</h2>
-                  <span className="rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
-                    Depth {selectedProject.depth}
-                  </span>
-                </div>
-                <p className="max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {selectedProject.description || "프로젝트 설명이 없습니다."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => onDuplicateProject(selectedProject.id)}
-                disabled={isDatabaseMode}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                프로젝트 복제
-              </button>
-              <button
-                type="button"
-                onClick={() => downloadTasksCsv(projects, tasks, selectedProject.id)}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                CSV 다운로드
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm("프로젝트와 하위 프로젝트, Task를 모두 삭제할까요?")) {
-                    onDeleteProject(selectedProject.id);
-                  }
-                }}
-                className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:hover:bg-rose-950/30"
-              >
-                프로젝트 삭제
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="border-b border-slate-200/90 px-6 py-4 dark:border-slate-800">
           <div className="rounded-[24px] border border-slate-200/80 bg-slate-50 px-4 py-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
             <p>선택한 프로젝트를 기준으로 하위 프로젝트 {descendantProjects.length}개와 연결된 Task를 함께 보여줍니다.</p>

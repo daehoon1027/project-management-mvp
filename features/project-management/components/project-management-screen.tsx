@@ -212,6 +212,21 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
     handleOpenEditProjectForm(selectedProject.id);
   };
 
+  const handleStartProjectDelete = () => {
+    if (!selectedProject) {
+      window.alert("삭제할 프로젝트를 먼저 선택해 주세요.");
+      return;
+    }
+
+    if (!window.confirm("선택한 프로젝트와 하위 프로젝트, 연결된 Task를 모두 삭제할까요?")) {
+      return;
+    }
+
+    closeProjectForm();
+    closeTaskForm();
+    handleDeleteProject(selectedProject.id);
+  };
+
   const runServerMutation = (mutation: () => Promise<MutationResult>, onSuccess?: () => void) => {
     startTransition(async () => {
       const result = await mutation();
@@ -527,13 +542,11 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                     filters={taskFilters}
                     isDatabaseMode={isDatabaseMode}
                     onFiltersChange={handleTaskFiltersChange}
-                    onDeleteProject={handleDeleteProject}
                     onEditTask={handleOpenEditTaskForm}
                     onDeleteTask={handleDeleteTask}
                     onOpenTask={openTaskDetail}
                     onPatchTask={handlePatchTask}
                     onDuplicateTask={handleDuplicateTask}
-                    onDuplicateProject={handleDuplicateProject}
                   />
                   <TodayFocus projects={projects} tasks={tasks} onOpenTask={openTaskDetail} />
                 </section>
@@ -615,6 +628,13 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                       className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                     >
                       수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleStartProjectDelete}
+                      className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/20 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                    >
+                      프로젝트 삭제
                     </button>
                   </div>
                   <div className="hidden flex flex-wrap gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
