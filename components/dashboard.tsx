@@ -176,8 +176,8 @@ export function Dashboard({ projects, tasks, onExportAllTasks }: DashboardProps)
   };
 
   return (
-    <section className="space-y-4">
-      <Card className="space-y-4 border-slate-200 bg-white">
+    <section className="space-y-3">
+      <Card className="space-y-3 border-slate-200 bg-white">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">운영 요약</h2>
@@ -194,26 +194,26 @@ export function Dashboard({ projects, tasks, onExportAllTasks }: DashboardProps)
           ) : null}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {summaryItems.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{item.value}</p>
-              <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+            <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{item.value}</p>
+              <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>
             </div>
           ))}
         </div>
       </Card>
 
       <Card className="overflow-hidden border-slate-200 bg-white p-0">
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">프로젝트 진행 현황</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
+          <h2 className="text-base font-semibold text-slate-900">프로젝트 진행 현황</h2>
+          <p className="mt-0.5 text-xs text-slate-500">
             루트 프로젝트별로 전체 Task, 미완료 Task, 하위 프로젝트를 바로 펼쳐서 확인합니다.
           </p>
         </div>
 
-        <div className="hidden grid-cols-[minmax(0,1.8fr)_minmax(220px,0.9fr)_auto] gap-4 border-b border-slate-200 bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 xl:grid">
+        <div className="hidden grid-cols-[minmax(0,1.8fr)_minmax(220px,0.9fr)_auto] gap-3 border-b border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 xl:grid">
           <span>프로젝트</span>
           <span>진행률</span>
           <span>세부 보기</span>
@@ -228,16 +228,16 @@ export function Dashboard({ projects, tasks, onExportAllTasks }: DashboardProps)
             const openPanel = openPanelByProjectId[project.id] ?? null;
 
             return (
-              <article key={project.id} className="px-5 py-4">
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(220px,0.9fr)_auto] xl:items-center">
+              <article key={project.id} className="px-4 py-3">
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.8fr)_minmax(220px,0.9fr)_auto] xl:items-center">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                         Depth {project.depth}
                       </span>
-                      <h3 className="truncate text-lg font-semibold text-slate-900">{project.name}</h3>
+                      <h3 className="truncate text-base font-semibold text-slate-900">{project.name}</h3>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500">{project.description || "프로젝트 설명 없음"}</p>
+                    <p className="mt-1 text-xs text-slate-500">{project.description || "프로젝트 설명 없음"}</p>
                   </div>
 
                   <div className="space-y-2">

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, useTransition, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
-import { AssigneeListPanel } from "@/components/assignee-list-panel";
 import { AssigneeWorkspace } from "@/components/assignee-workspace";
 import { Dashboard } from "@/components/dashboard";
 import { ProjectDetail } from "@/components/project-detail";
@@ -407,16 +406,16 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   };
 
   const renderInputWorkspace = () => (
-    <section className="space-y-5">
-      <Card className="space-y-5 border-amber-100 bg-white">
+    <section className="space-y-3">
+      <Card className="space-y-3 border-amber-100 bg-white">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-2">
             <span className="inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-amber-700">
               INPUT WORKSPACE
             </span>
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">입력 워크스페이스</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">입력 워크스페이스</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
                 프로젝트와 Task 입력은 여기서만 시작합니다. 프로젝트 맵에서 대상을 고른 뒤 바로 등록해 주세요.
               </p>
             </div>
@@ -462,9 +461,9 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
         </div>
 
         {inputSection === "project" ? (
-          <div className="rounded-[26px] border border-slate-200/90 bg-white p-5">
+          <div className="rounded-xl border border-slate-200/90 bg-white p-4">
             {projectFormState ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">
                     {projectFormState.mode === "edit"
@@ -494,14 +493,14 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                 />
               </div>
             ) : (
-              <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                 위의 프로젝트 입력, 하위 프로젝트 입력, 수정 버튼 중 하나를 눌러 바로 시작해 주세요.
               </div>
             )}
           </div>
         ) : (
-          <div className="rounded-[26px] border border-slate-200/90 bg-white p-5">
-            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+          <div className="rounded-xl border border-slate-200/90 bg-white p-4">
+            <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500">
               대상 프로젝트
               <p className="mt-1 font-semibold text-slate-900">
                 {selectedProject?.name ?? "먼저 프로젝트 맵에서 프로젝트를 선택해 주세요."}
@@ -531,7 +530,7 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
                 />
               </div>
             ) : (
-              <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                 위의 Task 입력 버튼을 눌러 바로 Task 등록을 시작해 주세요.
               </div>
             )}
@@ -590,34 +589,19 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
     if (activeSection === "assignee") {
       return (
-        <section className="flex flex-col gap-4 xl:flex-row xl:items-start">
-          <aside className="xl:w-[220px] xl:flex-none">
-            <AssigneeListPanel
-              tasks={tasks}
-              selectedAssignee={taskFilters.assignee}
-              onSelectAssignee={(assignee) =>
-                handleTaskFiltersChange((current) => ({
-                  ...current,
-                  assignee,
-                }))
-              }
-            />
-          </aside>
-
-          <section className="min-w-0 xl:flex-1">
-            <AssigneeWorkspace
-              projects={projects}
-              tasks={tasks}
-              filters={taskFilters}
-              isDatabaseMode={isDatabaseMode}
-              onFiltersChange={handleTaskFiltersChange}
-              onEditTask={handleOpenEditTaskForm}
-              onDeleteTask={handleDeleteTask}
-              onOpenTask={openTaskDetail}
-              onPatchTask={handlePatchTask}
-              onDuplicateTask={handleDuplicateTask}
-            />
-          </section>
+        <section className="min-w-0 w-full">
+          <AssigneeWorkspace
+            projects={projects}
+            tasks={tasks}
+            filters={taskFilters}
+            isDatabaseMode={isDatabaseMode}
+            onFiltersChange={handleTaskFiltersChange}
+            onEditTask={handleOpenEditTaskForm}
+            onDeleteTask={handleDeleteTask}
+            onOpenTask={openTaskDetail}
+            onPatchTask={handlePatchTask}
+            onDuplicateTask={handleDuplicateTask}
+          />
         </section>
       );
     }
@@ -631,8 +615,8 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
 
   if (!mounted) {
     return (
-      <main className="min-h-screen px-6 py-10">
-        <div className="mx-auto flex max-w-7xl items-center justify-center rounded-[32px] border border-amber-100 bg-white p-12 text-slate-700">
+      <main className="min-h-screen px-4 py-4">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-center rounded-2xl border border-amber-100 bg-white p-8 text-slate-700">
           데이터를 불러오는 중입니다...
         </div>
       </main>
@@ -640,54 +624,43 @@ export function ProjectManagementScreen({ pageData }: ProjectManagementScreenPro
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.10),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] px-4 py-6 text-slate-900 md:px-6 lg:px-8">
-      <div className="mx-auto max-w-[2000px] space-y-5">
-        <section className="overflow-hidden rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.97)_0%,rgba(243,248,255,0.97)_100%)] px-6 py-5 shadow-[0_18px_48px_rgba(71,85,105,0.08)]">
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-950 md:text-[42px]">프로젝트 관리 워크스페이스</h1>
-        </section>
-
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
-          <aside className="xl:sticky xl:top-6 xl:w-[220px] xl:flex-none">
-            <Card className="overflow-hidden border-amber-100 bg-white/95 p-0">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#fffaf0_0%,#f5f9ff_100%)] px-4 py-4">
-                <h2 className="text-xl font-semibold text-slate-900">프로젝트 컨트롤</h2>
-              </div>
-
-              <div className="space-y-2 px-3 py-3">
-                {sidebarItems.map((item) => {
-                  const isActive = activeSection === item.id;
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setActiveSection(item.id)}
-                      className={cn(
-                        "w-full rounded-[16px] border px-3 py-3 text-left transition",
-                        isActive
-                          ? "border-sky-200 bg-sky-50 text-sky-700 shadow-[0_10px_22px_rgba(14,165,233,0.08)]"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
-                      )}
-                    >
-                      <p className="text-sm font-semibold">{item.label}</p>
-                      <p className={cn("mt-1 text-xs", isActive ? "text-sky-600" : "text-slate-400")}>{item.description}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-          </aside>
-
-          <section className="min-w-0 space-y-4 xl:flex-1">
-            <div className="rounded-[24px] border border-white/70 bg-white/94 px-5 py-4 shadow-[0_14px_32px_rgba(71,85,105,0.07)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ACTIVE VIEW</p>
-              <h2 className="mt-2 text-[30px] font-semibold tracking-tight text-slate-950">{sectionMeta[activeSection].title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">{sectionMeta[activeSection].description}</p>
-            </div>
-
-            {renderActiveSection()}
-          </section>
+    <main className="min-h-screen text-slate-900">
+      {/* ── Compact Top Bar ── */}
+      <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5 md:px-6">
+          <h1 className="shrink-0 text-base font-bold tracking-tight text-slate-900 md:text-lg">프로젝트 관리</h1>
+          <span className="h-4 w-px bg-slate-300" />
+          {/* Nav buttons - always visible on sm+, horizontal scroll on mobile */}
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {sidebarItems.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveSection(item.id)}
+                  className={cn(
+                    "shrink-0 rounded-lg px-2 py-1.5 text-xs font-semibold transition",
+                    isActive
+                      ? "bg-sky-100 text-sky-700 shadow-sm"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-700",
+                  )}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+      </header>
+
+      <div className="mx-auto max-w-[1600px] px-3 py-3 md:px-5 md:py-4">
+      <div className="mx-auto max-w-[1600px] px-3 py-3 md:px-5 md:py-4">
+        {/* ── Content Area ── */}
+        <section className="min-w-0 w-full">
+          {renderActiveSection()}
+        </section>
+      </div>
       </div>
 
       <TaskDetailDrawer
